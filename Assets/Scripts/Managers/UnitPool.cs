@@ -1,9 +1,17 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class UnitPool: MonoBehaviour
+public class UnitPool : MonoBehaviour
 {
-    public class UnitPoolInstance {
+    public class UnitPoolInstance
+    {
+        public static GameObject _holder;
+
+        public UnitPoolInstance(GameObject holder)
+        {
+            _holder = holder;
+        }
+
         class PoolElement
         {
             [SerializeField] private static readonly int initialPoolSize = 10;
@@ -19,6 +27,7 @@ public class UnitPool: MonoBehaviour
                 for (int i = 0; i < initialPoolSize; i++)
                 {
                     GameObject newObj = Instantiate(prefab);
+                    newObj.transform.SetParent(UnitPoolInstance._holder.transform);
                     newObj.SetActive(false);
                     objects.Enqueue(newObj);
                 }
@@ -37,6 +46,7 @@ public class UnitPool: MonoBehaviour
                     Debug.LogWarning($"Pool for {prefab.name} is empty. Instantiating new object.");
 
                     GameObject newObj = Instantiate(prefab);
+                    newObj.transform.SetParent(UnitPoolInstance._holder.transform);
                     newObj.SetActive(true);
                     return newObj;
                 }
@@ -51,7 +61,7 @@ public class UnitPool: MonoBehaviour
         }
 
         Dictionary<BaseUnitConfig, PoolElement> pools = new Dictionary<BaseUnitConfig, PoolElement>();
-        
+
         void InitializePools(List<BaseUnitConfig> configs)
         {
             foreach (var config in configs)
@@ -69,7 +79,7 @@ public class UnitPool: MonoBehaviour
             {
                 InitializePools(new List<BaseUnitConfig> { config });
             }
-        
+
             return pools[config].Dequeue();
         }
 
@@ -91,19 +101,14 @@ public class UnitPool: MonoBehaviour
         }
     }
 
-    void Awake()
-    {
-        _instance ??= new UnitPoolInstance();
-    }
-
     private static UnitPoolInstance _instance;
 
     public static UnitPoolInstance Instance
     {
         get
         {
-            _instance ??= new UnitPoolInstance();
+            _instance ??= new UnitPoolInstance(GameObject.Find("Enemy Holder"));
             return _instance;
-        }    
+        }
     }
 }

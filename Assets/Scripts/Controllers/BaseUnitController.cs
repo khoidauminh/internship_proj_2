@@ -20,7 +20,7 @@ public class BaseUnitController : MonoBehaviour
 
     public virtual void CustomUpdate()
     {
-        if (transform.position.y < -100f)
+        if (transform.position.y < -10f)
         {
             Die();
         }

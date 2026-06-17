@@ -2,23 +2,24 @@ using UnityEngine;
 
 public class ColliderController : MonoBehaviour
 {
-    
+
     private PlayerInput _input;
 
     private int _enemyLayer;
-
-    private bool _toAttack;
 
     private float _attack;
 
     private const float _attackActivationThres = 0.4f;
     private const float _attackCooldown = 0.5f;
 
+    private CameraController _camera;
+
     private GameObject player;
 
     void Awake()
     {
         _input = new PlayerInput();
+        _camera = GameObject.Find("CameraHolder").GetComponent<CameraController>();
         _enemyLayer = LayerMask.NameToLayer("Enemy");
     }
 
@@ -26,8 +27,10 @@ public class ColliderController : MonoBehaviour
     {
         player = GameObject.Find("Player");
 
-        _input.Player.Attack.performed += ctx => {
+        _input.Player.Attack.performed += ctx =>
+        {
             _attack = _attackCooldown;
+            AudioManager.Smack(transform.position);
         };
     }
 
@@ -41,13 +44,20 @@ public class ColliderController : MonoBehaviour
         _input.Disable();
     }
 
+    public bool IsAttacking()
+    {
+        return _attack >= _attackActivationThres;
+    }
+
     void OnTriggerStay(Collider other)
     {
-        if (other.gameObject.layer == _enemyLayer && _attack >= _attackActivationThres)
+        if (other.gameObject.layer == _enemyLayer && IsAttacking())
         {
             _attack = 0;
+            ParticleManager.GetInstance().BurstAttackParticle(other.gameObject.transform.position, transform.position);
+            AudioManager.Explode(other.gameObject.transform.position);
             other.gameObject.GetComponent<BaseUnitController>().Die();
-            GameObject.Find("CameraHolder").GetComponent<CameraController>().Shake();
+            _camera.Shake();
         }
     }
 

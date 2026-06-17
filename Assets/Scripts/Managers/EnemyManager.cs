@@ -5,15 +5,16 @@ public class EnemyManager : MonoBehaviour
 {
     class Instance
     {
-        private List<BaseUnitConfig> _types;
-        private List<int> _spawnCount;
-        private readonly List<int> _spawnCountMax = new List<int>{10, 15, 20};
+        private List<BaseUnitConfig> _types = new List<BaseUnitConfig> { };
+        private readonly List<int> _spawnCount = new List<int> { 0, 0, 0 };
+        private readonly List<int> _spawnCountMax = new List<int> { 10, 10, 15 };
 
         private int _wave = 0;
 
         private float _spawnTimer;
 
-        private List<BaseUnitController> _enemies = new List<BaseUnitController>();
+        private GameObject _holder;
+        private readonly List<BaseUnitController> _enemies = new List<BaseUnitController>();
         private int _enemiesKiled;
 
         private bool _cleared = false;
@@ -23,12 +24,11 @@ public class EnemyManager : MonoBehaviour
         private const float SPAWN_DIST = 3f;
         private const float SPAWN_RANGE = 4f;
 
-        public Instance()
+        public Instance(GameObject holder)
         {
             _enemiesKiled = 0;
 
-            _types = new List<BaseUnitConfig>{};
-            _spawnCount = new List<int>{0, 0, 0};
+            _holder = holder;
 
             BaseUnitConfig cylinder = ScriptableObject.CreateInstance<BaseUnitConfig>();
             cylinder.Initialize(5, 5, 2f, "Cylinder");
@@ -58,13 +58,12 @@ public class EnemyManager : MonoBehaviour
                 return;
             }
 
-
             float spawnX = (Random.Range(0f, SPAWN_RANGE) + SPAWN_DIST) * (UnityEngine.Random.value < 0.5f ? 1f : -1f);
             float spawnY = (Random.Range(0f, SPAWN_RANGE) + SPAWN_DIST) * (UnityEngine.Random.value < 0.5f ? 1f : -1f);
 
             spawnX = Mathf.Clamp(spawnX, -10f, 10f);
             spawnY = Mathf.Clamp(spawnY, -10f, 10f);
-            
+
             Vector3 spawnPoint = new Vector3(spawnX, 0, spawnY);
             GameObject enemy = UnitPool.Instance.GetUnit(config);
 
@@ -88,6 +87,9 @@ public class EnemyManager : MonoBehaviour
 
             _spawnCount[_wave] += 1;
 
+            ParticleManager.GetInstance().BurstEnemySpawnParticle(controller.transform.position);
+            controller.gameObject.transform.SetParent(_holder.transform);
+            AudioManager.Spawn(controller.transform.position);
             _enemies.Add(controller);
         }
 
@@ -115,7 +117,7 @@ public class EnemyManager : MonoBehaviour
             {
                 GameObject.Find("CameraHolder").GetComponent<CameraController>().Shake();
                 ClearAll();
-                
+
                 _wave += 1;
 
                 _cleared |= _wave == 3;
@@ -152,7 +154,7 @@ public class EnemyManager : MonoBehaviour
 
     void Awake()
     {
-        _instance ??= new Instance();
+        _instance ??= new Instance(GameObject.Find("Enemy Holder"));
     }
 
     public void CustomUpdate()
