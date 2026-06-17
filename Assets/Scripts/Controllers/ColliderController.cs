@@ -51,7 +51,7 @@ public class ColliderController : MonoBehaviour
         }
     }
 
-    void Update()
+    public void CustomUpdate()
     {
         transform.position = player.transform.position;
 

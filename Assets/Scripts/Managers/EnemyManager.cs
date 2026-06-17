@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 public class EnemyManager : MonoBehaviour
 {
@@ -8,7 +7,7 @@ public class EnemyManager : MonoBehaviour
     {
         private List<BaseUnitConfig> _types;
         private List<int> _spawnCount;
-        private readonly List<int> _spawnCountMax = new List<int>{10, 10, 10};
+        private readonly List<int> _spawnCountMax = new List<int>{10, 15, 20};
 
         private int _wave = 0;
 
@@ -17,7 +16,12 @@ public class EnemyManager : MonoBehaviour
         private List<BaseUnitController> _enemies = new List<BaseUnitController>();
         private int _enemiesKiled;
 
-        private int _maxEnemy = 10;
+        private bool _cleared = false;
+
+        public bool Cleared => _cleared;
+
+        private const float SPAWN_DIST = 3f;
+        private const float SPAWN_RANGE = 4f;
 
         public Instance()
         {
@@ -29,15 +33,15 @@ public class EnemyManager : MonoBehaviour
             BaseUnitConfig cylinder = ScriptableObject.CreateInstance<BaseUnitConfig>();
             cylinder.Initialize(5, 5, 2f, "Cylinder");
 
-            BaseUnitConfig cube = ScriptableObject.CreateInstance<BaseUnitConfig>();
-            cube.Initialize(1, 1, 5f, "Cube");
-
             BaseUnitConfig capsule = ScriptableObject.CreateInstance<BaseUnitConfig>();
             capsule.Initialize(1, 1, 2f, "Capsule");
 
+            BaseUnitConfig cube = ScriptableObject.CreateInstance<BaseUnitConfig>();
+            cube.Initialize(1, 1, 5f, "Cube");
+
             _types.Add(cylinder);
-            _types.Add(cube);
             _types.Add(capsule);
+            _types.Add(cube);
         }
 
         public void SpawnEnemy()
@@ -49,7 +53,14 @@ public class EnemyManager : MonoBehaviour
                 return;
             }
 
-            Vector3 spawnPoint = new Vector3(Random.Range(-5, 5), 0, Random.Range(-5, 5));
+
+            float spawnX = (Random.Range(0f, SPAWN_RANGE) + SPAWN_DIST) * (UnityEngine.Random.value < 0.5f ? 1f : -1f);
+            float spawnY = (Random.Range(0f, SPAWN_RANGE) + SPAWN_DIST) * (UnityEngine.Random.value < 0.5f ? 1f : -1f);
+
+            spawnX = Mathf.Clamp(spawnX, -10f, 10f);
+            spawnY = Mathf.Clamp(spawnY, -10f, 10f);
+            
+            Vector3 spawnPoint = new Vector3(spawnX, 0, spawnY);
             GameObject enemy = UnitPool.Instance.GetUnit(config);
 
             if (enemy == null)
@@ -95,12 +106,15 @@ public class EnemyManager : MonoBehaviour
 
         void CheckLevel()
         {
-            if (_spawnCount[_wave] >= _spawnCountMax[_wave] && _enemies.Count == 0 && _wave < 3)
+            if (_wave < 3 && _spawnCount[_wave] >= _spawnCountMax[_wave] && _enemies.Count == 0)
             {
                 GameObject.Find("CameraHolder").GetComponent<CameraController>().Shake();
                 ClearAll();
                 
                 _wave += 1;
+
+                _cleared |= _wave == 3;
+
                 _spawnTimer = 2f;
                 return;
             }
@@ -136,7 +150,7 @@ public class EnemyManager : MonoBehaviour
         _instance ??= new Instance();
     }
 
-    void Update()
+    public void CustomUpdate()
     {
         _instance.Update();
     }

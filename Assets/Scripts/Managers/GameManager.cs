@@ -6,8 +6,8 @@ public class GameManager : MonoBehaviour
     {
         [SerializeField] private BaseUnitConfig _playerConfig;
 
-        public Instance()
-        {}
+        public PlayerController playerController = FindAnyObjectByType<PlayerController>();
+        public EnemyManager enemyManager = FindAnyObjectByType<EnemyManager>();
     }
 
     private static Instance _instance;
@@ -15,5 +15,11 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         _instance ??= new Instance();
+    }
+
+    void Update()
+    {
+        _instance.playerController.CustomUpdate();
+        _instance.enemyManager.CustomUpdate();
     }
 }

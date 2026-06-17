@@ -17,5 +17,14 @@ public class Capsule : BaseUnitController
         {
             Move(offset.normalized);
         }
+
+        if (transform.position.magnitude >= 10f)
+        {
+            Vector3 dir = -transform.position.normalized;
+
+            dir.y = 0;
+
+            Move(dir);
+        }
     }
 }
