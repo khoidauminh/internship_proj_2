@@ -1,15 +1,19 @@
 using UnityEngine;
 
+#nullable enable
+
 public class AudioManager : MonoBehaviour
 {
-    private AudioSource _source;
+    private static AudioSource? _source;
     private static AudioClip? _smack = null;
     private static AudioClip? _spawn = null;
     private static AudioClip? _explode = null;
+    private static AudioClip? _levelUp = null;
+    private static AudioClip? _win = null;
 
     void Awake()
     {
-        _source = FindAnyObjectByType<AudioSource>();
+        _source = gameObject.GetComponent<AudioSource>();
     }
 
     public static void Smack(Vector3 pos)
@@ -28,5 +32,30 @@ public class AudioManager : MonoBehaviour
     {
         _spawn ??= Resources.Load<AudioClip>("Sounds/Spawn");
         AudioSource.PlayClipAtPoint(_spawn, pos);
+    }
+
+    public static void LevelUp(Vector3 pos)
+    {
+        _levelUp ??= Resources.Load<AudioClip>("Sounds/Levelup");
+        AudioSource.PlayClipAtPoint(_levelUp, pos);
+    }
+
+    public static void StopAll()
+    {
+        AudioSource[] list = FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
+
+        foreach (AudioSource i in list)
+        {
+            if (i != _source)
+            {
+                i.Stop();
+            }
+        }
+    }
+
+    public static void Win()
+    {
+        _win ??= Resources.Load<AudioClip>("Sounds/Win");
+        AudioSource.PlayClipAtPoint(_win, new Vector3(0, 0, 0));
     }
 }

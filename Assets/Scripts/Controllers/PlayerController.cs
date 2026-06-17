@@ -34,8 +34,12 @@ public class PlayerController : MonoBehaviour
 
         if (moveDirection.magnitude > 0.1f)
         {
-            _rb.AddForce(moveDirection * 10f);
             transform.rotation = Quaternion.LookRotation(moveDirection);
+            _rb.AddForce(moveDirection * 10f);
+        }
+        else
+        {
+            transform.rotation = Quaternion.Euler(0, transform.rotation.y, 0);
         }
 
         _collider.CustomUpdate();

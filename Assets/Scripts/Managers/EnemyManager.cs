@@ -113,17 +113,31 @@ public class EnemyManager : MonoBehaviour
 
         void CheckLevel()
         {
+            Debug.Log("Checking...");
+
             if (_wave < 3 && _spawnCount[_wave] >= _spawnCountMax[_wave] && _enemies.Count == 0)
             {
+                GameObject player = GameObject.Find("Player");
                 GameObject.Find("CameraHolder").GetComponent<CameraController>().Shake();
                 ClearAll();
 
+                AudioManager.LevelUp(player.transform.position);
+
+                Debug.Log("Level Up!");
+
                 _wave += 1;
 
-                _cleared |= _wave == 3;
+                _cleared |= (_wave == 3);
+
+
+                if (_cleared)
+                {
+                    AudioManager.StopAll();
+                    AudioManager.Win();
+                    Debug.Log("All levels cleared!");
+                }
 
                 _spawnTimer = 2f;
-                return;
             }
         }
 
@@ -139,8 +153,12 @@ public class EnemyManager : MonoBehaviour
         public void Update()
         {
             _spawnTimer -= Time.deltaTime;
-            _enemiesKiled += _enemies.RemoveAll(enemy => !enemy.gameObject.activeSelf);
-            if (_enemiesKiled > 0)
+
+            int enemiesJustKilled = _enemies.RemoveAll(enemy => !enemy.gameObject.activeSelf);
+
+            _enemiesKiled += enemiesJustKilled;
+
+            if (enemiesJustKilled > 0)
             {
                 CheckLevel();
             }

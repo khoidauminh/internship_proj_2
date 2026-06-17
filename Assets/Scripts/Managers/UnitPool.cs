@@ -43,7 +43,7 @@ public class UnitPool : MonoBehaviour
             {
                 if (objects.Count == 0)
                 {
-                    Debug.LogWarning($"Pool for {prefab.name} is empty. Instantiating new object.");
+                    // Debug.LogWarning($"Pool for {prefab.name} is empty. Instantiating new object.");
 
                     GameObject newObj = Instantiate(prefab);
                     newObj.transform.SetParent(UnitPoolInstance._holder.transform);
@@ -51,7 +51,7 @@ public class UnitPool : MonoBehaviour
                     return newObj;
                 }
 
-                Debug.Log($"Dequeueing object from pool for {prefab.name}. Remaining objects: {objects.Count - 1}");
+                // Debug.Log($"Dequeueing object from pool for {prefab.name}. Remaining objects: {objects.Count - 1}");
 
                 GameObject obj = objects.Dequeue();
                 obj.SetActive(true);

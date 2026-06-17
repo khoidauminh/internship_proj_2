@@ -64,6 +64,7 @@ public class ColliderController : MonoBehaviour
     public void CustomUpdate()
     {
         transform.position = player.transform.position;
+        transform.rotation = player.transform.rotation;
 
         if (_attack >= 0)
             _attack -= Time.deltaTime;
