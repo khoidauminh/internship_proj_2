@@ -46,6 +46,11 @@ public class EnemyManager : MonoBehaviour
 
         public void SpawnEnemy()
         {
+            if (_wave >= _types.Count)
+            {
+                return;
+            }
+
             BaseUnitConfig config = _types[_wave];
 
             if (_spawnCount[_wave] >= _spawnCountMax[_wave])
