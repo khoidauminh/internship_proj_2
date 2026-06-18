@@ -1,22 +1,32 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 #nullable enable
 
 public class AudioManager : MonoBehaviour
 {
     private static GameObject? _prefab;
+    private static GameObject? _holder;
+
     private static AudioClip? _smack = null;
     private static AudioClip? _spawn = null;
     private static AudioClip? _explode = null;
     private static AudioClip? _levelUp = null;
     private static AudioClip? _win = null;
 
+    private static readonly Queue<AudioSource> _pool = new();
+
     static void SpawnAudioSource(AudioClip clip, Vector3 pos)
     {
         _prefab ??= Resources.Load<GameObject>("Prefabs/BaseAudio");
-        AudioSource src = Instantiate(_prefab, pos, Quaternion.identity).GetComponent<AudioSource>();
+        _holder ??= GameObject.Find("Audio Source Holder");
+
+        AudioSource src = (_pool.Count > 0 && !_pool.Peek().isPlaying) ? _pool.Dequeue() : Instantiate(_prefab, pos, Quaternion.identity).GetComponent<AudioSource>();
+
+        src.transform.position = pos;
+        _pool.Enqueue(src);
+        src.transform.SetParent(_holder.transform);
         src.PlayOneShot(clip);
-        Destroy(src.gameObject, clip.length);
     }
 
     static void SpawnAudioSource(AudioClip clip)

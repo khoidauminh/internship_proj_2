@@ -53,6 +53,6 @@ public class BaseUnitController : MonoBehaviour
 
     public void Die()
     {
-        UnitPool.Instance.ReleaseUnit(this);
+        UnitPool.GetInstance().ReleaseUnit(this);
     }
 }

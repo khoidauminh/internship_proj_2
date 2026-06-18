@@ -2,24 +2,39 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    class Instance
-    {
-        [SerializeField] private BaseUnitConfig _playerConfig;
+    [SerializeField] private BaseUnitConfig _playerConfig;
 
-        public PlayerController playerController = FindAnyObjectByType<PlayerController>();
-        public EnemyManager enemyManager = FindAnyObjectByType<EnemyManager>();
+    internal PlayerController _playerController;
+    internal EnemyManager _enemyManager;
+
+    private static GameManager _instance;
+    public static GameManager GetInstance()
+    {
+        _instance ??= FindAnyObjectByType<GameManager>();
+        _instance ??= new GameObject(nameof(GameManager)).AddComponent<GameManager>();
+        return _instance;
     }
 
-    private static Instance _instance;
-
-    void Awake()
+    void Start()
     {
-        _instance ??= new Instance();
+        if (_instance != null && _instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        else
+        {
+            _instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+
+        _playerController = FindAnyObjectByType<PlayerController>();
+        _enemyManager = FindAnyObjectByType<EnemyManager>();
     }
 
     void Update()
     {
-        _instance.playerController.CustomUpdate();
-        _instance.enemyManager.CustomUpdate();
+        GetInstance()._playerController.CustomUpdate();
+        GetInstance()._enemyManager.CustomUpdate();
     }
 }
