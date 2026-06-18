@@ -5,6 +5,8 @@ using System.Collections.Generic;
 
 public class AudioManager : MonoBehaviour
 {
+    private static float volume = 0.67f;
+
     private static GameObject? _prefab;
     private static GameObject? _holder;
 
@@ -26,7 +28,7 @@ public class AudioManager : MonoBehaviour
         src.transform.position = pos;
         _pool.Enqueue(src);
         src.transform.SetParent(_holder.transform);
-        src.PlayOneShot(clip);
+        src.PlayOneShot(clip, volume);
     }
 
     static void SpawnAudioSource(AudioClip clip)
@@ -56,6 +58,24 @@ public class AudioManager : MonoBehaviour
     {
         _levelUp ??= Resources.Load<AudioClip>("Sounds/Levelup");
         SpawnAudioSource(_levelUp, pos);
+    }
+
+    public static void ChangeVolume(float val)
+    {
+        volume = Mathf.Clamp01(val);
+
+        AudioSource[] list = FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
+
+        foreach (AudioSource i in list)
+        {
+            if (i.gameObject.name == "Bgm")
+            {
+                i.volume = volume * 0.5f;
+                continue;
+            }
+
+            i.volume = volume;
+        }
     }
 
     public static void StopAll()

@@ -90,6 +90,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainHUD
   _enemiesKilled: {fileID: 237303384720046235}
+  _enemiesKilledButton: {fileID: 6165002125536693925}
+  _animator: {fileID: 1765645007069146837}
 --- !u!1001 &398760376424305553
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -138,6 +140,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0.00017357
       objectReference: {fileID: 0}
+    - target: {fileID: 6920099658386507976, guid: b43dbca8be89de3a8b7e0d37853f7825, type: 3}
+      propertyPath: m_Texture
+      value: 
+      objectReference: {fileID: 2800000, guid: db1a98a4ad0bdc806ad99b5745b02069, type: 3}
     - target: {fileID: 8037682964612242974, guid: b43dbca8be89de3a8b7e0d37853f7825, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -164,11 +170,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8037682964612242974, guid: b43dbca8be89de3a8b7e0d37853f7825, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 350.0385
+      value: 424.9936
       objectReference: {fileID: 0}
     - target: {fileID: 8037682964612242974, guid: b43dbca8be89de3a8b7e0d37853f7825, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 122.55881
+      value: 152.258
       objectReference: {fileID: 0}
     - target: {fileID: 8037682964612242974, guid: b43dbca8be89de3a8b7e0d37853f7825, type: 3}
       propertyPath: m_LocalPosition.x
@@ -200,11 +206,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8037682964612242974, guid: b43dbca8be89de3a8b7e0d37853f7825, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 221
+      value: 258.47754
       objectReference: {fileID: 0}
     - target: {fileID: 8037682964612242974, guid: b43dbca8be89de3a8b7e0d37853f7825, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 104
+      value: 118.84958
       objectReference: {fileID: 0}
     - target: {fileID: 8037682964612242974, guid: b43dbca8be89de3a8b7e0d37853f7825, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -221,7 +227,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5766528052546837812, guid: b43dbca8be89de3a8b7e0d37853f7825, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1765645007069146837}
   m_SourcePrefab: {fileID: 100100000, guid: b43dbca8be89de3a8b7e0d37853f7825, type: 3}
 --- !u!114 &237303384720046235 stripped
 MonoBehaviour:
@@ -234,6 +243,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+--- !u!1 &6165002125536693925 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5766528052546837812, guid: b43dbca8be89de3a8b7e0d37853f7825, type: 3}
+  m_PrefabInstance: {fileID: 398760376424305553}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &1765645007069146837
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6165002125536693925}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: a0b6f98a8e68f88aeb8a9538fae6d86f, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!224 &7639011383181200783 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8037682964612242974, guid: b43dbca8be89de3a8b7e0d37853f7825, type: 3}

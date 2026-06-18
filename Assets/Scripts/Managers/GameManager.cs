@@ -5,21 +5,29 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    // internal EnemyManager _enemyManager;
+    private string _currentScene;
 
-    public enum Screen
+    public event Action<string, string> OnSceneChange;
+    public event Action<bool> OnPause;
+    public event Action<int> OnEnemyKillCountChange;
+    public event Action OnLevelUp;
+
+    public void EnemyKilled(int enemiesKiled)
     {
-        Startup,
-        Title,
-        Game
+        OnEnemyKillCountChange?.Invoke(enemiesKiled);
     }
 
-    private Screen _currentScreen;
-    // private UIRoot _uiRoot;
-    public event Action<Screen, Screen> OnScreenChange;
+    public void LevelUp()
+    {
+        OnLevelUp?.Invoke();
+    }
+
+    private bool _isPaused;
 
     private static GameManager _instance;
-    private static Dictionary<Screen, string> _sceneNames;
+
+
+
     public static GameManager GetInstance()
     {
         _instance ??= FindAnyObjectByType<GameManager>();
@@ -29,12 +37,7 @@ public class GameManager : MonoBehaviour
 
     void Awake()
     {
-        _currentScreen = Screen.Startup;
-        _sceneNames = new Dictionary<Screen, string>
-        {
-            [Screen.Title] = "title",
-            [Screen.Game] = "game"
-        };
+        _currentScene = "title";
     }
 
     void Start()
@@ -50,31 +53,41 @@ public class GameManager : MonoBehaviour
             DontDestroyOnLoad(gameObject);
         }
 
-        ChangeScreen(Screen.Title);
+        _isPaused = false;
+
+        ChangeScreen(SceneManager.GetActiveScene().name);
     }
 
-    public void ChangeScreen(Screen scr)
+    public void ChangeScreen(string newSceneName)
     {
-        OnScreenChange?.Invoke(_currentScreen, scr);
-        _currentScreen = scr;
+        Debug.Log($"Changing scene from {_currentScene} to {newSceneName}");
+        OnSceneChange?.Invoke(_currentScene, newSceneName);
+        _currentScene = newSceneName;
     }
 
     public void SwitchToGameScene()
     {
-        SceneManager.LoadScene(_sceneNames[Screen.Game]);
-        ChangeScreen(Screen.Game);
+        SceneManager.LoadScene("game");
+        ChangeScreen("game");
     }
 
     public void Unpause()
     {
-        // _currentScreen = Screen.Game;
+        OnPause?.Invoke(false);
         Time.timeScale = 1;
+        _isPaused = false;
     }
 
     public void Pause()
     {
-        // _currentScreen = Screen.Pause;
+        OnPause?.Invoke(true);
         Time.timeScale = 0;
+        _isPaused = true;
+    }
+
+    public bool IsPaused()
+    {
+        return _isPaused;
     }
 
     void Update()

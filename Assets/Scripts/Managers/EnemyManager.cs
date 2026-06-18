@@ -14,8 +14,6 @@ public class EnemyManager : MonoBehaviour
     private readonly List<BaseUnitController> _enemies = new();
     private int _enemiesKiled;
 
-    public event System.Action<int> OnEnemyKillCountChange;
-
     private bool _cleared = false;
 
     public bool Cleared => _cleared;
@@ -138,6 +136,8 @@ public class EnemyManager : MonoBehaviour
 
             AudioManager.LevelUp(player.transform.position);
 
+            GameManager.GetInstance().LevelUp();
+
             Debug.Log("Level Up!");
 
             _wave += 1;
@@ -166,6 +166,11 @@ public class EnemyManager : MonoBehaviour
 
     public void Update()
     {
+        if (GameManager.GetInstance().IsPaused())
+        {
+            return;
+        }
+
         _spawnTimer -= Time.deltaTime;
 
         int enemiesJustKilled = _enemies.RemoveAll(enemy => !enemy.gameObject.activeSelf);
@@ -174,7 +179,7 @@ public class EnemyManager : MonoBehaviour
 
         if (enemiesJustKilled > 0)
         {
-            OnEnemyKillCountChange?.Invoke(_enemiesKiled);
+            GameManager.GetInstance().EnemyKilled(_enemiesKiled);
             CheckLevel();
         }
 

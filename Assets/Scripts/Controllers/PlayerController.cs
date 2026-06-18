@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    private Vector3 _initialPosition;
     private PlayerInput _input;
     private Animator _animator;
     private CameraController _camera;
@@ -17,6 +18,19 @@ public class PlayerController : MonoBehaviour
         _rb = GetComponent<Rigidbody>();
     }
 
+    void Start()
+    {
+        _initialPosition = transform.position;
+
+        GameManager game = GameManager.GetInstance();
+
+        game.OnLevelUp += ResetPosition;
+        _input.Player.Pause.performed += (ctx) =>
+        {
+            if (game.IsPaused()) game.Unpause(); else game.Pause();
+        };
+    }
+
     void OnEnable()
     {
         _input.Enable();
@@ -25,6 +39,11 @@ public class PlayerController : MonoBehaviour
     void OnDisable()
     {
         _input.Disable();
+    }
+
+    public void ResetPosition()
+    {
+        transform.position = _initialPosition;
     }
 
     public void Update()

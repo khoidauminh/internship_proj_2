@@ -53,20 +53,27 @@ public class UIRoot : MonoBehaviour
         uiMap[name].gameObject.SetActive(active);
     }
 
-    void HandleScreenChange(GameManager.Screen prev, GameManager.Screen next)
+    void HandleSceneChange(string prev, string next)
     {
-        if (prev == GameManager.Screen.Startup && next == GameManager.Screen.Title)
-        {
-            ToggleUI("Title Screen", true);
-            return;
-        }
-
-        if (prev == GameManager.Screen.Title && next == GameManager.Screen.Game)
+        if (prev == "title")
         {
             ToggleUI("Title Screen", false);
-            ToggleUI("MainHUD", true);
-            return;
         }
+
+        if (next == "title")
+        {
+            ToggleUI("Title Screen", true);
+        }
+
+        if (next == "game")
+        {
+            ToggleUI("MainHUD", true);
+        }
+    }
+
+    void HandlePauses(bool isPaused)
+    {
+        ToggleUI("Pause Screen", isPaused);
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -85,6 +92,9 @@ public class UIRoot : MonoBehaviour
 
         uiMap = new();
 
-        GameManager.GetInstance().OnScreenChange += HandleScreenChange;
+        GameManager game = GameManager.GetInstance();
+
+        game.OnSceneChange += HandleSceneChange;
+        game.OnPause += HandlePauses;
     }
 }

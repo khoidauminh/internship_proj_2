@@ -32,6 +32,11 @@ public class ColliderController : MonoBehaviour
             _attack = _attackCooldown;
             AudioManager.Smack(transform.position);
         };
+
+        GameManager.GetInstance().OnPause += (isPaused) =>
+        {
+            if (isPaused) _input.Disable(); else _input.Enable();
+        };
     }
 
     void OnEnable()
