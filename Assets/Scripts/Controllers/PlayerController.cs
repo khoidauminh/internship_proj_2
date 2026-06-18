@@ -27,7 +27,7 @@ public class PlayerController : MonoBehaviour
         _input.Disable();
     }
 
-    public void CustomUpdate()
+    public void Update()
     {
         Vector2 inputDirection = _input.Player.Move.ReadValue<Vector2>();
         Vector3 moveDirection = new Vector3(inputDirection.x, 0, inputDirection.y);

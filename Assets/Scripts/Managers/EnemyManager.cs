@@ -11,9 +11,10 @@ public class EnemyManager : MonoBehaviour
 
     private float _spawnTimer;
 
-    private GameObject _holder;
     private readonly List<BaseUnitController> _enemies = new();
     private int _enemiesKiled;
+
+    public event System.Action<int> OnEnemyKillCountChange;
 
     private bool _cleared = false;
 
@@ -21,6 +22,14 @@ public class EnemyManager : MonoBehaviour
 
     private const float SPAWN_DIST = 3f;
     private const float SPAWN_RANGE = 4f;
+
+    private static EnemyManager _instance;
+    public static EnemyManager GetInstance()
+    {
+        _instance ??= FindAnyObjectByType<EnemyManager>();
+        _instance ??= new GameObject(nameof(EnemyManager)).AddComponent<EnemyManager>();
+        return _instance;
+    }
 
     void Start()
     {
@@ -36,8 +45,6 @@ public class EnemyManager : MonoBehaviour
         }
 
         _enemiesKiled = 0;
-
-        _holder = GameObject.Find("Enemy Holder");
 
         BaseUnitConfig cylinder = ScriptableObject.CreateInstance<BaseUnitConfig>();
         cylinder.Initialize(5, 5, 2f, "Cylinder");
@@ -97,7 +104,6 @@ public class EnemyManager : MonoBehaviour
         _spawnCount[_wave] += 1;
 
         ParticleManager.GetInstance().BurstEnemySpawnParticle(controller.transform.position);
-        controller.gameObject.transform.SetParent(_holder.transform);
         AudioManager.Spawn(controller.transform.position);
         _enemies.Add(controller);
     }
@@ -158,7 +164,7 @@ public class EnemyManager : MonoBehaviour
         }
     }
 
-    public void CustomUpdate()
+    public void Update()
     {
         _spawnTimer -= Time.deltaTime;
 
@@ -168,19 +174,11 @@ public class EnemyManager : MonoBehaviour
 
         if (enemiesJustKilled > 0)
         {
-            GameObject.Find("EnemiesKilledText").GetComponent<TextMeshPro>().
+            OnEnemyKillCountChange?.Invoke(_enemiesKiled);
             CheckLevel();
         }
 
         CheckSpawn();
         AdvanceCurrentEnemies();
-    }
-
-    private static EnemyManager _instance;
-    public static EnemyManager GetInstance()
-    {
-        _instance ??= FindAnyObjectByType<EnemyManager>();
-        _instance ??= new GameObject(nameof(EnemyManager)).AddComponent<EnemyManager>();
-        return _instance;
     }
 }

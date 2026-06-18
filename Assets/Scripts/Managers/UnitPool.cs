@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 public class UnitPool : MonoBehaviour
 {
@@ -47,6 +48,7 @@ public class UnitPool : MonoBehaviour
 
         public GameObject Get()
         {
+            // objects = new Queue<GameObject>(objects.Where(obj => obj == null));
             GameObject obj = (objects.Count > 0 && !objects.Peek().activeSelf) ? objects.Dequeue() : Instantiate(prefab);
             obj.SetActive(true);
             obj.transform.SetParent(_holder.transform);

@@ -48,9 +48,6 @@ public class ParticleManager : MonoBehaviour
         GameObject prefabSpawn = Resources.Load<GameObject>("Prefabs/Particles/Spawn");
         GameObject prefabAttack = Resources.Load<GameObject>("Prefabs/Particles/Attack");
 
-        // prefabSpawn.transform.SetParent(_particleHolder.transform);
-        // prefabAttack.transform.SetParent(_particleHolder.transform);
-
         _pools[ParticleType.EnemySpawn].Push(prefabSpawn);
         _pools[ParticleType.PlayerAttack].Push(prefabAttack);
     }
@@ -74,14 +71,15 @@ public class ParticleManager : MonoBehaviour
         particle.transform.SetParent(_particleHolder.transform);
         particle.SetActive(true);
         particle.GetComponent<Rigidbody>().AddForce(veclocity);
-        StartCoroutine(DisableThisIn(particle, type, life));
-    }
 
-    IEnumerator<WaitForSeconds> DisableThisIn(GameObject obj, ParticleType type, float seconds)
-    {
-        yield return new WaitForSeconds(seconds);
-        obj.SetActive(false);
-        _pools[type].Push(obj);
+        static IEnumerator<WaitForSeconds> DisableThisIn(GameObject obj, ParticleType type, float seconds)
+        {
+            yield return new WaitForSeconds(seconds);
+            obj.SetActive(false);
+            _pools[type].Push(obj);
+        }
+
+        StartCoroutine(DisableThisIn(particle, type, life));
     }
 
     public void BurstEnemySpawnParticle(Vector3 position)
