@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
@@ -21,14 +22,20 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         _initialPosition = transform.position;
+        GameManager.GetInstance().OnLevelUp += ResetPosition;
+        _input.Player.Pause.performed += HandlePause;
+    }
 
+    void HandlePause(InputAction.CallbackContext ctx)
+    {
         GameManager game = GameManager.GetInstance();
+        if (game.IsPaused()) game.Unpause(); else game.Pause();
+    }
 
-        game.OnLevelUp += ResetPosition;
-        _input.Player.Pause.performed += (ctx) =>
-        {
-            if (game.IsPaused()) game.Unpause(); else game.Pause();
-        };
+    void OnDestroy()
+    {
+        GameManager.GetInstance().OnLevelUp -= ResetPosition;
+        _input.Player.Pause.performed -= HandlePause;
     }
 
     void OnEnable()
@@ -41,7 +48,7 @@ public class PlayerController : MonoBehaviour
         _input.Disable();
     }
 
-    public void ResetPosition()
+    public void ResetPosition(int _level)
     {
         transform.position = _initialPosition;
     }

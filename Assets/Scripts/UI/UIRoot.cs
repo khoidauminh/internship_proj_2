@@ -65,6 +65,11 @@ public class UIRoot : MonoBehaviour
             ToggleUI("Title Screen", true);
         }
 
+        if (prev == "game")
+        {
+            ToggleUI("MainHUD", false);
+        }
+
         if (next == "game")
         {
             ToggleUI("MainHUD", true);

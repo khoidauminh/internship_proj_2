@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3669049427242846193}
   - component: {fileID: 3252362403865264091}
   - component: {fileID: 6135765443498051083}
+  - component: {fileID: 245807624699906350}
   m_Layer: 0
   m_Name: Spawn
   m_TagString: Untagged
@@ -118,3 +119,15 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &245807624699906350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7390271049643455221}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff791d680fcdfeb2a81051bc9c6bbd35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Particle

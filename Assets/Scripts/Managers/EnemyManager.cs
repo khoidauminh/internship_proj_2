@@ -7,7 +7,7 @@ public class EnemyManager : MonoBehaviour
     private readonly List<int> _spawnCount = new List<int> { 0, 0, 0 };
     private readonly List<int> _spawnCountMax = new List<int> { 10, 10, 15 };
 
-    private int _wave = 0;
+    private int _level = 0;
 
     private float _spawnTimer;
 
@@ -21,29 +21,8 @@ public class EnemyManager : MonoBehaviour
     private const float SPAWN_DIST = 3f;
     private const float SPAWN_RANGE = 4f;
 
-    private static EnemyManager _instance;
-    public static EnemyManager GetInstance()
-    {
-        _instance ??= FindAnyObjectByType<EnemyManager>();
-        _instance ??= new GameObject(nameof(EnemyManager)).AddComponent<EnemyManager>();
-        return _instance;
-    }
-
     void Start()
     {
-        if (_instance != null && _instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        else
-        {
-            _instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-
-        _enemiesKiled = 0;
-
         BaseUnitConfig cylinder = ScriptableObject.CreateInstance<BaseUnitConfig>();
         cylinder.Initialize(5, 5, 2f, "Cylinder");
 
@@ -53,21 +32,29 @@ public class EnemyManager : MonoBehaviour
         BaseUnitConfig cube = ScriptableObject.CreateInstance<BaseUnitConfig>();
         cube.Initialize(1, 1, 5f, "Cube");
 
+        _level = GameManager.GetInstance().CurrentSaveData.level;
+        _enemiesKiled = GameManager.GetInstance().CurrentSaveData.enemiesKilled;
+
         _types.Add(cylinder);
         _types.Add(capsule);
         _types.Add(cube);
     }
 
+    public int EnemiesKilled()
+    {
+        return _enemiesKiled;
+    }
+
     public void SpawnEnemy()
     {
-        if (_wave >= _types.Count)
+        if (_level >= _types.Count)
         {
             return;
         }
 
-        BaseUnitConfig config = _types[_wave];
+        BaseUnitConfig config = _types[_level];
 
-        if (_spawnCount[_wave] >= _spawnCountMax[_wave])
+        if (_spawnCount[_level] >= _spawnCountMax[_level])
         {
             return;
         }
@@ -99,11 +86,9 @@ public class EnemyManager : MonoBehaviour
             return;
         }
 
-        _spawnCount[_wave] += 1;
-
-        ParticleManager.GetInstance().BurstEnemySpawnParticle(controller.transform.position);
-        AudioManager.Spawn(controller.transform.position);
+        _spawnCount[_level] += 1;
         _enemies.Add(controller);
+        GameManager.GetInstance().BroadcastEnemySpawn(controller.transform.position);
     }
 
     void AdvanceCurrentEnemies()
@@ -128,26 +113,25 @@ public class EnemyManager : MonoBehaviour
     {
         Debug.Log("Checking...");
 
-        if (_wave < 3 && _spawnCount[_wave] >= _spawnCountMax[_wave] && _enemies.Count == 0)
+        if (_level < 3 && _spawnCount[_level] >= _spawnCountMax[_level] && _enemies.Count == 0)
         {
             GameObject player = GameObject.Find("Player");
             GameObject.Find("CameraHolder").GetComponent<CameraController>().Shake();
             ClearAll();
 
-            AudioManager.LevelUp(player.transform.position);
-
-            GameManager.GetInstance().LevelUp();
-
             Debug.Log("Level Up!");
 
-            _wave += 1;
+            _level += 1;
 
-            _cleared |= (_wave == 3);
+            _cleared |= (_level == 3);
+
+            AudioManager.GetInstance().LevelUp(player.transform.position);
+            GameManager.GetInstance().LevelUp(_level);
 
             if (_cleared)
             {
-                AudioManager.StopAll();
-                AudioManager.Win();
+                AudioManager.GetInstance().StopAll();
+                AudioManager.GetInstance().Win();
                 Debug.Log("All levels cleared!");
             }
 
@@ -166,7 +150,7 @@ public class EnemyManager : MonoBehaviour
 
     public void Update()
     {
-        if (GameManager.GetInstance().IsPaused())
+        if (!GameManager.GetInstance().IsPlaying())
         {
             return;
         }

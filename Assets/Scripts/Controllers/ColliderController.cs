@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class ColliderController : MonoBehaviour
 {
@@ -26,17 +27,25 @@ public class ColliderController : MonoBehaviour
     void Start()
     {
         player = GameObject.Find("Player");
+        _input.Player.Attack.performed += HandleAttack;
+        GameManager.GetInstance().OnPause += HandlePause;
+    }
 
-        _input.Player.Attack.performed += ctx =>
-        {
-            _attack = _attackCooldown;
-            AudioManager.Smack(transform.position);
-        };
+    void OnDestroy()
+    {
+        _input.Player.Attack.performed -= HandleAttack;
+        GameManager.GetInstance().OnPause -= HandlePause;
+    }
 
-        GameManager.GetInstance().OnPause += (isPaused) =>
-        {
-            if (isPaused) _input.Disable(); else _input.Enable();
-        };
+    void HandlePause(bool p)
+    {
+        if (p) _input.Disable(); else _input.Enable();
+    }
+
+    void HandleAttack(InputAction.CallbackContext ctx)
+    {
+        _attack = _attackCooldown;
+        GameManager.GetInstance().BroadcastPlayerAttack(transform.position);
     }
 
     void OnEnable()
@@ -59,9 +68,9 @@ public class ColliderController : MonoBehaviour
         if (other.gameObject.layer == _enemyLayer && IsAttacking())
         {
             _attack = 0;
-            ParticleManager.GetInstance().BurstAttackParticle(other.gameObject.transform.position, transform.position);
-            AudioManager.Explode(other.gameObject.transform.position);
+            GameManager.GetInstance().BroadCastPlayerKill(transform.position, other.gameObject.transform.position);
             other.gameObject.GetComponent<BaseUnitController>().Die();
+
             _camera.Shake();
         }
     }

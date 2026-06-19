@@ -1,24 +1,48 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-#nullable enable
-
 public class AudioManager : MonoBehaviour
 {
     private static float volume = 0.67f;
 
-    private static GameObject? _prefab;
-    private static GameObject? _holder;
+    private GameObject _prefab;
+    private GameObject _holder;
 
-    private static AudioClip? _smack = null;
-    private static AudioClip? _spawn = null;
-    private static AudioClip? _explode = null;
-    private static AudioClip? _levelUp = null;
-    private static AudioClip? _win = null;
+    private AudioClip _smack = null;
+    private AudioClip _spawn = null;
+    private AudioClip _explode = null;
+    private AudioClip _levelUp = null;
+    private AudioClip _win = null;
 
-    private static readonly Queue<AudioSource> _pool = new();
+    private readonly Queue<AudioSource> _pool = new();
 
-    static void SpawnAudioSource(AudioClip clip, Vector3 pos)
+    private static AudioManager _instance;
+    public static AudioManager GetInstance()
+    {
+        _instance ??= FindAnyObjectByType<AudioManager>();
+        _instance ??= new GameObject(nameof(AudioManager)).AddComponent<AudioManager>();
+        return _instance;
+    }
+
+    void Start()
+    {
+        if (_instance != null && _instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        _instance = this;
+
+        _smack ??= Resources.Load<AudioClip>("Sounds/Smack");
+        _smack ??= Resources.Load<AudioClip>("Sounds/Smack");
+        _explode ??= Resources.Load<AudioClip>("Sounds/Explode");
+        _spawn ??= Resources.Load<AudioClip>("Sounds/Spawn");
+        _levelUp ??= Resources.Load<AudioClip>("Sounds/Levelup");
+        _win ??= Resources.Load<AudioClip>("Sounds/Win");
+    }
+
+    void SpawnAudioSource(AudioClip clip, Vector3 pos)
     {
         _prefab ??= Resources.Load<GameObject>("Prefabs/BaseAudio");
         _holder ??= GameObject.Find("Audio Source Holder");
@@ -31,36 +55,32 @@ public class AudioManager : MonoBehaviour
         src.PlayOneShot(clip, volume);
     }
 
-    static void SpawnAudioSource(AudioClip clip)
+    void SpawnAudioSource(AudioClip clip)
     {
         SpawnAudioSource(clip, Vector3.zero);
     }
 
-    public static void Smack(Vector3 pos)
+    public void Smack(Vector3 pos)
     {
-        _smack ??= Resources.Load<AudioClip>("Sounds/Smack");
         SpawnAudioSource(_smack, pos);
     }
 
-    public static void Explode(Vector3 pos)
+    public void Explode(Vector3 pos)
     {
-        _explode ??= Resources.Load<AudioClip>("Sounds/Explode");
         SpawnAudioSource(_explode, pos);
     }
 
-    public static void Spawn(Vector3 pos)
+    public void Spawn(Vector3 pos)
     {
-        _spawn ??= Resources.Load<AudioClip>("Sounds/Spawn");
         SpawnAudioSource(_spawn, pos);
     }
 
-    public static void LevelUp(Vector3 pos)
+    public void LevelUp(Vector3 pos)
     {
-        _levelUp ??= Resources.Load<AudioClip>("Sounds/Levelup");
         SpawnAudioSource(_levelUp, pos);
     }
 
-    public static void ChangeVolume(float val)
+    public void ChangeVolume(float val)
     {
         volume = Mathf.Clamp01(val);
 
@@ -78,7 +98,7 @@ public class AudioManager : MonoBehaviour
         }
     }
 
-    public static void StopAll()
+    public void StopAll()
     {
         AudioSource[] list = FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
 
@@ -88,9 +108,8 @@ public class AudioManager : MonoBehaviour
         }
     }
 
-    public static void Win()
+    public void Win()
     {
-        _win ??= Resources.Load<AudioClip>("Sounds/Win");
         SpawnAudioSource(_win);
     }
 }

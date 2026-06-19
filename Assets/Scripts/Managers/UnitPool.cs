@@ -4,11 +4,16 @@ using System.Linq;
 
 public class UnitPool : MonoBehaviour
 {
-    public static GameObject _holder;
+    Dictionary<BaseUnitConfig, PoolElement> pools;
+
+    void Init()
+    {
+        pools = new Dictionary<BaseUnitConfig, PoolElement>();
+    }
 
     void Awake()
     {
-        _holder = GameObject.Find("Enemy Holder");
+        Init();
     }
 
     void Start()
@@ -21,7 +26,6 @@ public class UnitPool : MonoBehaviour
         else
         {
             _instance = this;
-            DontDestroyOnLoad(gameObject);
         }
     }
 
@@ -40,7 +44,6 @@ public class UnitPool : MonoBehaviour
             for (int i = 0; i < initialPoolSize; i++)
             {
                 GameObject newObj = Instantiate(prefab);
-                newObj.transform.SetParent(_holder.transform);
                 newObj.SetActive(false);
                 objects.Enqueue(newObj);
             }
@@ -48,10 +51,8 @@ public class UnitPool : MonoBehaviour
 
         public GameObject Get()
         {
-            // objects = new Queue<GameObject>(objects.Where(obj => obj == null));
             GameObject obj = (objects.Count > 0 && !objects.Peek().activeSelf) ? objects.Dequeue() : Instantiate(prefab);
             obj.SetActive(true);
-            obj.transform.SetParent(_holder.transform);
             return obj;
         }
 
@@ -62,10 +63,10 @@ public class UnitPool : MonoBehaviour
         }
     }
 
-    Dictionary<BaseUnitConfig, PoolElement> pools = new Dictionary<BaseUnitConfig, PoolElement>();
-
     void PreInitializePoolIfNotSet(BaseUnitConfig config)
     {
+        pools ??= new();
+
         if (!pools.ContainsKey(config))
         {
             pools[config] = new PoolElement(Resources.Load<GameObject>($"Prefabs/{config.Name}"));

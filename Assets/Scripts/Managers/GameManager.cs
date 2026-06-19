@@ -10,23 +10,49 @@ public class GameManager : MonoBehaviour
     public event Action<string, string> OnSceneChange;
     public event Action<bool> OnPause;
     public event Action<int> OnEnemyKillCountChange;
-    public event Action OnLevelUp;
+    public event Action<Vector3> OnEnemySpawn;
+    public event Action<int> OnLevelUp;
+
+    public event Action<Vector3, Vector3> OnPlayerKill;
+    public event Action<Vector3> OnPlayerAttack;
+
+    private DataManager _dataManager;
+    private DataManager.SaveData _currentSave;
+    public DataManager.SaveData CurrentSaveData => _currentSave;
+
+    public void BroadCastPlayerKill(Vector3 player, Vector3 enemy)
+    {
+        OnPlayerKill?.Invoke(player, enemy);
+        AudioManager.GetInstance().Explode(enemy);
+    }
+
+    public void BroadcastPlayerAttack(Vector3 pos)
+    {
+        OnPlayerAttack?.Invoke(pos);
+        AudioManager.GetInstance().Smack(pos);
+    }
+
+    public void BroadcastEnemySpawn(Vector3 pos)
+    {
+        OnEnemySpawn?.Invoke(pos);
+        AudioManager.GetInstance().Spawn(pos);
+    }
 
     public void EnemyKilled(int enemiesKiled)
     {
         OnEnemyKillCountChange?.Invoke(enemiesKiled);
     }
 
-    public void LevelUp()
+    public void LevelUp(int newLevel)
     {
-        OnLevelUp?.Invoke();
+        _currentSave.enemiesKilled = FindAnyObjectByType<EnemyManager>().EnemiesKilled();
+        _currentSave.level = newLevel;
+        OnLevelUp?.Invoke(newLevel);
     }
 
     private bool _isPaused;
 
     private static GameManager _instance;
-
-
 
     public static GameManager GetInstance()
     {
@@ -54,6 +80,9 @@ public class GameManager : MonoBehaviour
         }
 
         _isPaused = false;
+        _dataManager = new DataManager();
+        _currentSave = DataManager.NewData();
+        _currentSave.run += 1;
 
         ChangeScreen(SceneManager.GetActiveScene().name);
     }
@@ -65,10 +94,36 @@ public class GameManager : MonoBehaviour
         _currentScene = newSceneName;
     }
 
+    public void ResetData()
+    {
+        _currentSave = DataManager.NewData();
+    }
+
+    public void LoadData()
+    {
+        _currentSave = _dataManager.TryLoadData();
+        Debug.Log($"Data: {_currentSave}");
+        EnemyKilled(_currentSave.enemiesKilled);
+    }
+
     public void SwitchToGameScene()
     {
         SceneManager.LoadScene("game");
         ChangeScreen("game");
+        EnemyKilled(_currentSave.enemiesKilled);
+    }
+
+    public void ReturnToMenu()
+    {
+        _dataManager.TrySaveData(_currentSave);
+        SceneManager.LoadScene("title");
+        ChangeScreen("title");
+        Unpause();
+    }
+
+    public bool IsPlaying()
+    {
+        return !IsPaused() && _currentScene == "game";
     }
 
     public void Unpause()

@@ -3,18 +3,6 @@ using System.Collections.Generic;
 
 public class ParticleManager : MonoBehaviour
 {
-    private static ParticleManager _instance;
-
-    private GameObject _particleHolder;
-
-    public static ParticleManager GetInstance()
-    {
-        _instance ??= FindAnyObjectByType<ParticleManager>();
-        _instance ??= new GameObject(nameof(ParticleManager)).AddComponent<ParticleManager>();
-
-        return _instance;
-    }
-
     public enum ParticleType
     {
         EnemySpawn,
@@ -24,62 +12,66 @@ public class ParticleManager : MonoBehaviour
     private GameObject _prefabSpawn;
     private GameObject _prefabAttack;
 
-    private static Dictionary<ParticleType, Stack<GameObject>> _pools;
+    private Dictionary<ParticleType, Queue<Particle>> _pools;
 
-    void Awake()
+    void Start()
     {
-        if (_instance != null && _instance != this)
+        GameManager.GetInstance().OnEnemySpawn += HandleSpawn;
+        GameManager.GetInstance().OnPlayerKill += BurstAttackParticle;
+
+        _prefabSpawn = Resources.Load<GameObject>("Prefabs/Particles/Spawn");
+        _prefabAttack = Resources.Load<GameObject>("Prefabs/Particles/Attack");
+    }
+
+    void OnDestroy()
+    {
+        GameManager.GetInstance().OnEnemySpawn -= HandleSpawn;
+        GameManager.GetInstance().OnPlayerKill -= BurstAttackParticle;
+    }
+
+    void HandleSpawn(Vector3 pos)
+    {
+        BurstEnemySpawnParticle(pos);
+        AudioManager.GetInstance().Spawn(pos);
+    }
+
+    Particle InstantiateParticle(ParticleType type)
+    {
+        return Instantiate(type == ParticleType.EnemySpawn ? _prefabSpawn : _prefabAttack).GetComponent<Particle>();
+    }
+
+    void InitializePoolIfNotSet(ParticleType type)
+    {
+        _pools ??= new();
+
+        if (!_pools.ContainsKey(type))
         {
-            Destroy(gameObject);
-            return;
+            _pools[type] = new Queue<Particle> { };
         }
 
-        _instance = this;
-        DontDestroyOnLoad(gameObject);
+        Queue<Particle> pool = _pools[type];
 
-        _pools = new Dictionary<ParticleType, Stack<GameObject>>
+        if (pool.Count == 0)
         {
-            [ParticleType.EnemySpawn] = new Stack<GameObject> { },
-            [ParticleType.PlayerAttack] = new Stack<GameObject> { },
-        };
-
-        _particleHolder = GameObject.Find("Particle Holder");
-
-        GameObject prefabSpawn = Resources.Load<GameObject>("Prefabs/Particles/Spawn");
-        GameObject prefabAttack = Resources.Load<GameObject>("Prefabs/Particles/Attack");
-
-        _pools[ParticleType.EnemySpawn].Push(prefabSpawn);
-        _pools[ParticleType.PlayerAttack].Push(prefabAttack);
+            Particle particle = InstantiateParticle(type);
+            particle.Init(type, 0f);
+            _pools[type].Enqueue(particle);
+        }
     }
 
     void SpawnParticle(ParticleType type, Vector3 position, Quaternion rotation, float life, Vector3 veclocity)
     {
-        Stack<GameObject> pool = _pools[type];
+        InitializePoolIfNotSet(type);
 
-        if (pool.Count <= 1)
-        {
-            GameObject newParticle = Instantiate(pool.Peek(), position, rotation);
-            newParticle.transform.SetParent(_particleHolder.transform);
-            newParticle.GetComponent<Rigidbody>().AddForce(veclocity);
-            StartCoroutine(DisableThisIn(newParticle, type, life));
-            return;
-        }
+        Queue<Particle> pool = _pools[type];
 
-        GameObject particle = pool.Pop();
-        particle.transform.position = position;
-        particle.transform.rotation = rotation;
-        particle.transform.SetParent(_particleHolder.transform);
-        particle.SetActive(true);
-        particle.GetComponent<Rigidbody>().AddForce(veclocity);
-
-        static IEnumerator<WaitForSeconds> DisableThisIn(GameObject obj, ParticleType type, float seconds)
-        {
-            yield return new WaitForSeconds(seconds);
-            obj.SetActive(false);
-            _pools[type].Push(obj);
-        }
-
-        StartCoroutine(DisableThisIn(particle, type, life));
+        Particle particle = (pool.Count == 0 ? InstantiateParticle(type) : pool.Dequeue());
+        particle.Init(type, life);
+        GameObject obj = particle.gameObject;
+        obj.transform.position = position;
+        obj.transform.rotation = rotation;
+        obj.SetActive(true);
+        obj.GetComponent<Rigidbody>().AddForce(veclocity);
     }
 
     public void BurstEnemySpawnParticle(Vector3 position)
@@ -92,13 +84,27 @@ public class ParticleManager : MonoBehaviour
         }
     }
 
-    public void BurstAttackParticle(Vector3 position, Vector3 source)
+    public void BurstAttackParticle(Vector3 player, Vector3 enemy)
     {
         for (int i = 0; i < 20; i++)
         {
-            Vector3 veclocity = Vector3.Lerp((position - source).normalized, Random.onUnitSphere, 0.4f) * 15f;
-            Quaternion rotation = Quaternion.LookRotation(veclocity - source);
-            SpawnParticle(ParticleType.PlayerAttack, position, rotation, Random.Range(0.2f, 0.4f), veclocity);
+            Vector3 veclocity = Vector3.Lerp((enemy - player).normalized, Random.onUnitSphere, 0.4f) * 15f;
+            Quaternion rotation = Quaternion.LookRotation(veclocity - player);
+            SpawnParticle(ParticleType.PlayerAttack, enemy, rotation, Random.Range(0.2f, 0.4f), veclocity);
+        }
+    }
+
+    void Update()
+    {
+        Particle[] active = Object.FindObjectsByType<Particle>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+        foreach (Particle p in active)
+        {
+            if (p.Decay())
+            {
+                p.gameObject.SetActive(false);
+                _pools[p.Type].Enqueue(p);
+            }
         }
     }
 }

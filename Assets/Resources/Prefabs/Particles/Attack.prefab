@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4550682231879679902}
   - component: {fileID: 6882921078487414600}
   - component: {fileID: 8540938944786398079}
+  - component: {fileID: -4217432488441041585}
   m_Layer: 0
   m_Name: Attack
   m_TagString: Untagged
@@ -118,3 +119,15 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &-4217432488441041585
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7476768608709236652}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff791d680fcdfeb2a81051bc9c6bbd35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Particle

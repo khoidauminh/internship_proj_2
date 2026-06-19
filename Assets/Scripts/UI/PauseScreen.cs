@@ -4,6 +4,7 @@ using UnityEngine.UI;
 public class PauseScreen : MonoBehaviour
 {
     [SerializeField] private Button _unpause;
+    [SerializeField] private Button _returnToMenu;
     [SerializeField] private Slider _volume;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -14,6 +15,10 @@ public class PauseScreen : MonoBehaviour
             GameManager.GetInstance().Unpause();
         });
 
-        _volume.onValueChanged.AddListener(AudioManager.ChangeVolume);
+        _returnToMenu.onClick.AddListener(() => {
+            GameManager.GetInstance().ReturnToMenu();
+        });
+
+        _volume.onValueChanged.AddListener((v) => AudioManager.GetInstance().ChangeVolume(v));
     }
 }

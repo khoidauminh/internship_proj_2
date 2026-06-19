@@ -21,12 +21,17 @@ public class TitleScreen : MonoBehaviour
     void OnClickNewButton()
     {
         Debug.Log("Clicked on New");
-        GameManager.GetInstance().SwitchToGameScene();
+        GameManager game = GameManager.GetInstance();
+        game.ResetData();
+        game.SwitchToGameScene();
     }
 
     void OnClickLoadButton()
     {
-
+        Debug.Log("Clicked on Load");
+        GameManager game = GameManager.GetInstance();
+        game.LoadData();
+        game.SwitchToGameScene();
     }
 
     void OnClickSettingsButton()
