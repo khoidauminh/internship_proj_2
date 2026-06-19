@@ -13,11 +13,18 @@ public class GameManager : MonoBehaviour
     public event Action<Vector3> OnEnemySpawn;
     public event Action<int> OnLevelUp;
 
+    public event Action<int> OnNewRun;
+
     public event Action<Vector3, Vector3> OnPlayerKill;
     public event Action<Vector3> OnPlayerAttack;
 
     private DataManager _dataManager;
     private DataManager.SaveData _currentSave;
+
+    private int _runCount;
+    public int RunCount => _runCount;
+    public DataManager.SaveData SaveData => _currentSave;
+
     public DataManager.SaveData CurrentSaveData => _currentSave;
 
     public void BroadCastPlayerKill(Vector3 player, Vector3 enemy)
@@ -81,8 +88,9 @@ public class GameManager : MonoBehaviour
 
         _isPaused = false;
         _dataManager = new DataManager();
-        _currentSave = DataManager.NewData();
-        _currentSave.run += 1;
+        _runCount = _dataManager.GetRunCount();
+
+        LoadData();
 
         ChangeScreen(SceneManager.GetActiveScene().name);
     }
@@ -111,11 +119,14 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene("game");
         ChangeScreen("game");
         EnemyKilled(_currentSave.enemiesKilled);
+        OnNewRun?.Invoke(_runCount);
+        _runCount += 1;
     }
 
     public void ReturnToMenu()
     {
         _dataManager.TrySaveData(_currentSave);
+        _dataManager.SaveRunCount(_runCount);
         SceneManager.LoadScene("title");
         ChangeScreen("title");
         Unpause();

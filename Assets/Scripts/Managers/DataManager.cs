@@ -9,14 +9,39 @@ public class DataManager
     {
         public int enemiesKilled = 0;
         public int level = 0;
-        public int run = 0;
     }
 
     private readonly string path = Path.Combine(Application.persistentDataPath, "save.json");
+    private readonly string runCountPath = Path.Combine(Application.persistentDataPath, "runCount.txt");
 
     public static SaveData NewData()
     {
         return new SaveData();
+    }
+
+    public int GetRunCount()
+    {
+        try
+        {
+            return int.Parse(File.ReadAllText(runCountPath));
+        }
+        catch (Exception e)
+        {
+            Debug.Log($"Failed to load run count at {runCountPath}: {e}");
+            return 1;
+        }
+    }
+
+    public void SaveRunCount(int count)
+    {
+        try
+        {
+            File.WriteAllText(runCountPath, count.ToString());
+        }
+        catch (Exception e)
+        {
+            Debug.Log($"Failed to save run count {count}: {e}");
+        }
     }
 
     public SaveData TryLoadData()
