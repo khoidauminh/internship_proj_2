@@ -100,7 +100,7 @@ public class UIRoot : MonoBehaviour
         GameManager game = GameManager.GetInstance();
 
         ToggleUI("MainHUD", false);
-        ToggleUI("Title Screen", false);
+        ToggleUI("Title Screen", true);
         ToggleUI("Pause Screen", false);
 
         game.OnSceneChange += HandleSceneChange;
