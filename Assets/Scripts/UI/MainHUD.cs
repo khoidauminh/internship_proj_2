@@ -33,6 +33,11 @@ public class MainHUD : MonoBehaviour
 
     void Update()
     {
-        GameManager.GetInstance().SetMoveDirection(_joystick.Horizontal, _joystick.Vertical);
+        Vector2 vec = new Vector2(_joystick.Horizontal, _joystick.Vertical);
+
+        if (vec.magnitude > 0.1)
+        {
+            GameManager.GetInstance().SetMoveDirection(vec.normalized);
+        }
     }
 }

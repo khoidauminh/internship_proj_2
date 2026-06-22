@@ -47,10 +47,10 @@ public class UIRoot : MonoBehaviour
             uiMap[name] = ui;
             ui.gameObject.SetActive(active);
             ui.transform.SetParent(mainCanvas.transform, false);
-            return;
         }
 
         uiMap[name].gameObject.SetActive(active);
+        Debug.Log("UI Toggled");
     }
 
     void HandleSceneChange(string prev, string next)
