@@ -1,10 +1,12 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class MainHUD : MonoBehaviour
 {
     [SerializeField] private TMP_Text _enemiesKilled;
     [SerializeField] private GameObject _enemiesKilledButton;
+    [SerializeField] private Button _backButton;
     [SerializeField] private TMP_Text _runText;
     [SerializeField] private Animator _animator;
     [SerializeField] private FixedJoystick _joystick;
@@ -16,6 +18,7 @@ public class MainHUD : MonoBehaviour
         SetRunCount(game.RunCount);
         SetNewKill(game.SaveData.enemiesKilled);
 
+        _backButton.onClick.AddListener(GameManager.GetInstance().HandlePause);
         game.OnEnemyKillCountChange += SetNewKill;
         game.OnNewRun += SetRunCount;
     }
@@ -34,6 +37,10 @@ public class MainHUD : MonoBehaviour
     void Update()
     {
         Vector2 vec = new Vector2(_joystick.Horizontal, _joystick.Vertical);
-        GameManager.GetInstance().SetMoveDirection(vec.normalized);
+
+        if (vec.magnitude > 0.1 || Application.platform == RuntimePlatform.Android)
+        {
+            GameManager.GetInstance().SetMoveDirection(vec.normalized);
+        }
     }
 }
