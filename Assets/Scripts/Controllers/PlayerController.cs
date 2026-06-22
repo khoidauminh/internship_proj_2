@@ -4,7 +4,6 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     private Vector3 _initialPosition;
-    private PlayerInput _input;
     private Animator _animator;
     private CameraController _camera;
     private ColliderController _collider;
@@ -12,7 +11,6 @@ public class PlayerController : MonoBehaviour
 
     void Awake()
     {
-        _input = new PlayerInput();
         _animator = transform.GetChild(0).GetComponent<Animator>();
         _collider = FindAnyObjectByType<ColliderController>();
         _camera = FindAnyObjectByType<CameraController>();
@@ -23,29 +21,11 @@ public class PlayerController : MonoBehaviour
     {
         _initialPosition = transform.position;
         GameManager.GetInstance().OnLevelUp += ResetPosition;
-        _input.Player.Pause.performed += HandlePause;
-    }
-
-    void HandlePause(InputAction.CallbackContext ctx)
-    {
-        GameManager game = GameManager.GetInstance();
-        if (game.IsPaused()) game.Unpause(); else game.Pause();
     }
 
     void OnDestroy()
     {
         GameManager.GetInstance().OnLevelUp -= ResetPosition;
-        _input.Player.Pause.performed -= HandlePause;
-    }
-
-    void OnEnable()
-    {
-        _input.Enable();
-    }
-
-    void OnDisable()
-    {
-        _input.Disable();
     }
 
     public void ResetPosition(int _level)
@@ -55,7 +35,7 @@ public class PlayerController : MonoBehaviour
 
     public void Update()
     {
-        Vector2 inputDirection = _input.Player.Move.ReadValue<Vector2>();
+        Vector2 inputDirection = GameManager.GetInstance().MoveDirection();
         Vector3 moveDirection = new Vector3(inputDirection.x, 0, inputDirection.y);
 
         if (moveDirection.magnitude > 0.1f)

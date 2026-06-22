@@ -2,10 +2,14 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 public class GameManager : MonoBehaviour
 {
     private string _currentScene;
+
+    private PlayerInput _input;
+    private Vector2 _moveDirection;
 
     public event Action<string, string> OnSceneChange;
     public event Action<bool> OnPause;
@@ -45,6 +49,22 @@ public class GameManager : MonoBehaviour
         AudioManager.GetInstance().Spawn(pos);
     }
 
+    public void SetMoveDirection(Vector2 moveDir)
+    {
+        _moveDirection += moveDir;
+    }
+
+    public void SetMoveDirection(float x, float y)
+    {
+        _moveDirection.x += x;
+        _moveDirection.y += y;
+    }
+
+    public Vector2 MoveDirection()
+    {
+        return _moveDirection;
+    }
+
     public void EnemyKilled(int enemiesKiled)
     {
         OnEnemyKillCountChange?.Invoke(enemiesKiled);
@@ -71,6 +91,7 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         _currentScene = "title";
+        _input = new PlayerInput();
     }
 
     void Start()
@@ -90,9 +111,21 @@ public class GameManager : MonoBehaviour
         _dataManager = new DataManager();
         _runCount = _dataManager.GetRunCount();
 
+        _input.Player.Pause.performed += HandlePause;
+
         LoadData();
 
         ChangeScreen(SceneManager.GetActiveScene().name);
+    }
+
+    void OnDestroy()
+    {
+        _input.Player.Pause.performed -= HandlePause;
+    }
+
+    void HandlePause(InputAction.CallbackContext ctx)
+    {
+        if (IsPaused()) Unpause(); else Pause();
     }
 
     public void ChangeScreen(string newSceneName)
@@ -156,7 +189,21 @@ public class GameManager : MonoBehaviour
         return _isPaused;
     }
 
+    void OnEnable()
+    {
+        _input.Enable();
+    }
+
+    void OnDisable()
+    {
+        _input.Disable();
+    }
+
     void Update()
     {
+        if (Application.platform != RuntimePlatform.Android)
+        {
+            _moveDirection = _input.Player.Move.ReadValue<Vector2>();
+        }
     }
 }

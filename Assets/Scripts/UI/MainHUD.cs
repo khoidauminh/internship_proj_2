@@ -7,6 +7,7 @@ public class MainHUD : MonoBehaviour
     [SerializeField] private GameObject _enemiesKilledButton;
     [SerializeField] private TMP_Text _runText;
     [SerializeField] private Animator _animator;
+    [SerializeField] private FixedJoystick _joystick;
 
     void Start()
     {
@@ -28,5 +29,10 @@ public class MainHUD : MonoBehaviour
     {
         _enemiesKilled.SetText("Killed: {0}", count);
         _animator.SetTrigger("newKill");
+    }
+
+    void Update()
+    {
+        GameManager.GetInstance().SetMoveDirection(_joystick.Horizontal, _joystick.Vertical);
     }
 }
