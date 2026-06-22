@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour
 {
     private string _currentScene;
 
-    private PlayerInput _input;
+    public PlayerInput Input { get; private set; }
     private Vector2 _moveDirection;
 
     public event Action<string, string> OnSceneChange;
@@ -51,13 +51,8 @@ public class GameManager : MonoBehaviour
 
     public void SetMoveDirection(Vector2 moveDir)
     {
-        _moveDirection += moveDir;
-    }
-
-    public void SetMoveDirection(float x, float y)
-    {
-        _moveDirection.x += x;
-        _moveDirection.y += y;
+        _moveDirection = moveDir;
+        Debug.Log($"{moveDir}, {moveDir}");
     }
 
     public Vector2 MoveDirection()
@@ -91,7 +86,7 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         _currentScene = "title";
-        _input = new PlayerInput();
+        Input = new PlayerInput();
     }
 
     void Start()
@@ -111,7 +106,7 @@ public class GameManager : MonoBehaviour
         _dataManager = new DataManager();
         _runCount = _dataManager.GetRunCount();
 
-        _input.Player.Pause.performed += HandlePause;
+        Input.Player.Pause.performed += HandlePause;
 
         LoadData();
 
@@ -120,10 +115,15 @@ public class GameManager : MonoBehaviour
 
     void OnDestroy()
     {
-        _input.Player.Pause.performed -= HandlePause;
+        Input.Player.Pause.performed -= HandlePause;
     }
 
-    void HandlePause(InputAction.CallbackContext ctx)
+    public void HandlePause(InputAction.CallbackContext ctx)
+    {
+        if (IsPaused()) Unpause(); else Pause();
+    }
+
+    public void HandlePause()
     {
         if (IsPaused()) Unpause(); else Pause();
     }
@@ -191,19 +191,19 @@ public class GameManager : MonoBehaviour
 
     void OnEnable()
     {
-        _input.Enable();
+        Input.Enable();
     }
 
     void OnDisable()
     {
-        _input.Disable();
+        Input.Disable();
     }
 
     void Update()
     {
         if (Application.platform != RuntimePlatform.Android)
         {
-            _moveDirection = _input.Player.Move.ReadValue<Vector2>();
+            _moveDirection = Input.Player.Move.ReadValue<Vector2>();
         }
     }
 }

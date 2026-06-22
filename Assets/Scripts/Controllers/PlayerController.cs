@@ -41,7 +41,7 @@ public class PlayerController : MonoBehaviour
         if (moveDirection.magnitude > 0.1f)
         {
             transform.rotation = Quaternion.LookRotation(moveDirection);
-            _rb.AddForce(moveDirection * 10f);
+            _rb.AddForce(moveDirection * (Application.platform == RuntimePlatform.Android ? 2f : 10f));
         }
         else
         {

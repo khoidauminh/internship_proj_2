@@ -3,9 +3,6 @@ using UnityEngine.InputSystem;
 
 public class ColliderController : MonoBehaviour
 {
-
-    private PlayerInput _input;
-
     private int _enemyLayer;
 
     private float _attack;
@@ -19,7 +16,6 @@ public class ColliderController : MonoBehaviour
 
     void Awake()
     {
-        _input = new PlayerInput();
         _camera = GameObject.Find("CameraHolder").GetComponent<CameraController>();
         _enemyLayer = LayerMask.NameToLayer("Enemy");
     }
@@ -27,35 +23,18 @@ public class ColliderController : MonoBehaviour
     void Start()
     {
         player = GameObject.Find("Player");
-        _input.Player.Attack.performed += HandleAttack;
-        GameManager.GetInstance().OnPause += HandlePause;
+        GameManager.GetInstance().Input.Player.Attack.performed += HandleAttack;
     }
 
     void OnDestroy()
     {
-        _input.Player.Attack.performed -= HandleAttack;
-        GameManager.GetInstance().OnPause -= HandlePause;
-    }
-
-    void HandlePause(bool p)
-    {
-        if (p) _input.Disable(); else _input.Enable();
+        GameManager.GetInstance().Input.Player.Attack.performed -= HandleAttack;
     }
 
     void HandleAttack(InputAction.CallbackContext ctx)
     {
         _attack = _attackCooldown;
         GameManager.GetInstance().BroadcastPlayerAttack(transform.position);
-    }
-
-    void OnEnable()
-    {
-        _input.Enable();
-    }
-
-    void OnDisable()
-    {
-        _input.Disable();
     }
 
     public bool IsAttacking()
