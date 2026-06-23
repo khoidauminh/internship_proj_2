@@ -54,7 +54,7 @@ public class ParticleManager : MonoBehaviour
         if (pool.Count == 0)
         {
             Particle particle = InstantiateParticle(type);
-            particle.Init(type, 0f);
+            particle.Init(type);
             _pools[type].Enqueue(particle);
         }
     }
@@ -66,12 +66,9 @@ public class ParticleManager : MonoBehaviour
         Queue<Particle> pool = _pools[type];
 
         Particle particle = (pool.Count == 0 ? InstantiateParticle(type) : pool.Dequeue());
-        particle.Init(type, life);
-        GameObject obj = particle.gameObject;
-        obj.transform.position = position;
-        obj.transform.rotation = rotation;
-        obj.SetActive(true);
-        obj.GetComponent<Rigidbody>().AddForce(veclocity);
+        particle.Init(type, life, veclocity, 0.99f);
+        particle.transform.position = position;
+        particle.gameObject.SetActive(true);
     }
 
     public void BurstEnemySpawnParticle(Vector3 position)

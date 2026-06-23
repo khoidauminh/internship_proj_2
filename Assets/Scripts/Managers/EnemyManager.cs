@@ -5,7 +5,7 @@ public class EnemyManager : MonoBehaviour
 {
     private List<BaseUnitConfig> _types = new();
     private readonly List<int> _spawnCount = new List<int> { 0, 0, 0 };
-    private readonly List<int> _spawnCountMax = new List<int> { 10, 10, 15 };
+    private DataManager.Config _config;
 
     private int _level = 0;
 
@@ -34,6 +34,7 @@ public class EnemyManager : MonoBehaviour
 
         _level = GameManager.GetInstance().CurrentSaveData.level;
         _enemiesKiled = GameManager.GetInstance().CurrentSaveData.enemiesKilled;
+        _config = GameManager.GetInstance().GetConfig();
 
         _types.Add(cylinder);
         _types.Add(capsule);
@@ -54,7 +55,7 @@ public class EnemyManager : MonoBehaviour
 
         BaseUnitConfig config = _types[_level];
 
-        if (_spawnCount[_level] >= _spawnCountMax[_level])
+        if (_spawnCount[_level] >= _config.Levels[_level].NumEnemies)
         {
             return;
         }
@@ -113,7 +114,7 @@ public class EnemyManager : MonoBehaviour
     {
         Debug.Log("Checking...");
 
-        if (_level < 3 && _spawnCount[_level] >= _spawnCountMax[_level] && _enemies.Count == 0)
+        if (_level < 3 && _spawnCount[_level] >= _config.Levels[_level].NumEnemies && _enemies.Count == 0)
         {
             GameObject player = GameObject.Find("Player");
             GameObject.Find("CameraHolder").GetComponent<CameraController>().Shake();

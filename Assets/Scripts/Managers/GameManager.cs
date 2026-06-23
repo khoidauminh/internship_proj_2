@@ -24,12 +24,12 @@ public class GameManager : MonoBehaviour
 
     private DataManager _dataManager;
     private DataManager.SaveData _currentSave;
+    private DataManager.Config _currentConfig;
 
     private int _runCount;
     public int RunCount => _runCount;
-    public DataManager.SaveData SaveData => _currentSave;
-
     public DataManager.SaveData CurrentSaveData => _currentSave;
+    public DataManager.Config GetConfig() { return _currentConfig; }
 
     public void BroadCastPlayerKill(Vector3 player, Vector3 enemy)
     {
@@ -105,6 +105,7 @@ public class GameManager : MonoBehaviour
         _isPaused = false;
         _dataManager = new DataManager();
         _runCount = _dataManager.GetRunCount();
+        _currentConfig = _dataManager.TryLoad<DataManager.Config>();
 
         Input.Player.Pause.performed += HandlePause;
 
@@ -137,12 +138,12 @@ public class GameManager : MonoBehaviour
 
     public void ResetData()
     {
-        _currentSave = DataManager.NewData();
+        _currentSave = DataManager.New<DataManager.SaveData>();
     }
 
     public void LoadData()
     {
-        _currentSave = _dataManager.TryLoadData();
+        _currentSave = _dataManager.TryLoad<DataManager.SaveData>();
         Debug.Log($"Data: {_currentSave}");
         EnemyKilled(_currentSave.enemiesKilled);
     }
@@ -158,8 +159,9 @@ public class GameManager : MonoBehaviour
 
     public void ReturnToMenu()
     {
-        _dataManager.TrySaveData(_currentSave);
+        _dataManager.TrySave<DataManager.SaveData>(_currentSave);
         _dataManager.SaveRunCount(_runCount);
+        _dataManager.TrySave<DataManager.Config>(_currentConfig);
         SceneManager.LoadScene("title");
         ChangeScreen("title");
         Unpause();

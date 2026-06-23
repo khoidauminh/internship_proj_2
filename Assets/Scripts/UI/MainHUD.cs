@@ -16,7 +16,7 @@ public class MainHUD : MonoBehaviour
         GameManager game = GameManager.GetInstance();
 
         SetRunCount(game.RunCount);
-        SetNewKill(game.SaveData.enemiesKilled);
+        SetNewKill(game.CurrentSaveData.enemiesKilled);
 
         _backButton.onClick.AddListener(GameManager.GetInstance().HandlePause);
         game.OnEnemyKillCountChange += SetNewKill;
