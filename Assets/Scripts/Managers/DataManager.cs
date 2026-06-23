@@ -1,7 +1,8 @@
-using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using UnityEngine;
+using static DataManager.Config;
 
 public class DataManager
 {
@@ -19,14 +20,21 @@ public class DataManager
         public class Level
         {
             public int NumEnemies;
+            public BaseUnitConfig.Stats Stats;
 
-            public Level(int n)
+            public Level(int n, BaseUnitConfig.Stats fg)
             {
                 NumEnemies = n;
+                Stats = fg;
             }
         }
 
-        public List<Level> Levels = new List<Level> { new Level(10), new Level(10), new Level(15) };
+        public List<Level> Levels;
+
+        public Config(List<Level> levels)
+        {
+            Levels = levels;
+        }
 
         public override string ToString()
         {
@@ -44,6 +52,17 @@ public class DataManager
     private readonly string configPath = Path.Combine(Application.persistentDataPath, "config.json");
     private readonly string path = Path.Combine(Application.persistentDataPath, "save.json");
     private readonly string runCountPath = Path.Combine(Application.persistentDataPath, "runCount.txt");
+
+    private Config defaultConfig;
+
+    void Awake()
+    {
+        defaultConfig = new Config(new List<Level> {
+            new Level(10, Resources.Load<BaseUnitConfig>("Configs/Cylinder").Get()),
+            new Level(10, Resources.Load<BaseUnitConfig>("Configs/Capsule").Get()),
+            new Level(15, Resources.Load<BaseUnitConfig>("Configs/Cube").Get())
+        });
+    }
 
     public static T New<T>() where T : class, new()
     {
@@ -92,14 +111,43 @@ public class DataManager
         return null;
     }
 
-    public T TryLoad<T>() where T : class, new()
+    public Config TryLoadConfig()
     {
         try
         {
-            string loadPath = GetPathOf<T>();
+            string fileContent = File.ReadAllText(configPath);
+            Config ret = JsonUtility.FromJson<Config>(fileContent);
+            return ret;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Exception occurred: {e}");
+            Config ret = defaultConfig;
+            Debug.Log($"Created {ret}");
+            return ret;
+        }
+    }
 
-            string fileContent = File.ReadAllText(loadPath);
-            T ret = JsonUtility.FromJson<T>(fileContent);
+    public void TrySaveConfig(Config config)
+    {
+        try
+        {
+            string jsonString = JsonUtility.ToJson(config, true);
+            File.WriteAllText(configPath, jsonString);
+            Debug.Log($"Data saved to: {configPath}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Exception occurred: {e}");
+        }
+    }
+
+    public SaveData TryLoadSaveData()
+    {
+        try
+        {
+            string fileContent = File.ReadAllText(path);
+            SaveData ret = JsonUtility.FromJson<SaveData>(fileContent);
             Debug.Log($"Loaded {ret}");
 
             return ret;
@@ -107,25 +155,20 @@ public class DataManager
         catch (Exception e)
         {
             Debug.LogError($"Exception occurred: {e}");
-            T ret = new T();
+            SaveData ret = new SaveData();
             Debug.Log($"Created {ret}");
             return ret;
         }
     }
 
-    public void TrySave<T>(T save) where T : class, new()
+    public void TrySaveSaveData(SaveData save)
     {   
         try
-        {
-            string savePath = GetPathOf<T>();
-
-
-            Debug.Log($"DEBUG SAVE: {save}");
-
+        { 
             // Setting the second parameter to 'true' enables pretty printing (readable formatting)
             string jsonString = JsonUtility.ToJson(save, true);
-            File.WriteAllText(savePath, jsonString);
-            Debug.Log($"Data saved to: {savePath}");
+            File.WriteAllText(path, jsonString);
+            Debug.Log($"Data saved to: {path}");
         }
         catch (Exception e)
         {

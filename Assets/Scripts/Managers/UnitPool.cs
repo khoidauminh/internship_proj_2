@@ -4,11 +4,11 @@ using System.Linq;
 
 public class UnitPool : MonoBehaviour
 {
-    Dictionary<BaseUnitConfig, PoolElement> pools;
+    Dictionary<BaseUnitConfig.Stats, PoolElement> pools;
 
     void Init()
     {
-        pools = new Dictionary<BaseUnitConfig, PoolElement>();
+        pools = new Dictionary<BaseUnitConfig.Stats, PoolElement>();
     }
 
     void Awake()
@@ -39,6 +39,11 @@ public class UnitPool : MonoBehaviour
 
         public PoolElement(GameObject prefab)
         {
+            if (prefab == null)
+            {
+                Debug.LogError("Prefab is null!!");
+            }
+
             this.prefab = prefab;
 
             for (int i = 0; i < initialPoolSize; i++)
@@ -63,7 +68,7 @@ public class UnitPool : MonoBehaviour
         }
     }
 
-    void PreInitializePoolIfNotSet(BaseUnitConfig config)
+    void PreInitializePoolIfNotSet(BaseUnitConfig.Stats config)
     {
         pools ??= new();
 
@@ -73,7 +78,7 @@ public class UnitPool : MonoBehaviour
         }
     }
 
-    public GameObject GetUnit(BaseUnitConfig config)
+    public GameObject GetUnit(BaseUnitConfig.Stats config)
     {
         PreInitializePoolIfNotSet(config);
         return pools[config].Get();
@@ -82,7 +87,7 @@ public class UnitPool : MonoBehaviour
     public void ReleaseUnit(BaseUnitController controller)
     {
         controller.gameObject.SetActive(false);
-        pools[controller.Config].Push(controller.gameObject);
+        pools[controller.Stats].Push(controller.gameObject);
     }
 
     private static UnitPool _instance;

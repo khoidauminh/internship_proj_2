@@ -2,19 +2,19 @@ using UnityEngine;
 
 public class BaseUnitController : MonoBehaviour
 {
-    private BaseUnitConfig _config;
-    public BaseUnitConfig Config => _config;
+    private BaseUnitConfig.Stats _stats;
+    public BaseUnitConfig.Stats Stats => _stats;
 
     protected int _currentHealth;
     protected int _currentDamage;
     protected float _currentSpeed;
 
-    public void Initialize(BaseUnitConfig config)
+    public void Initialize(BaseUnitConfig.Stats config)
     {
-        _config = config;
-        _currentHealth = _config.BaseHealth;
-        _currentDamage = _config.BaseDamage;
-        _currentSpeed = _config.BaseSpeed;
+        _stats = config;
+        _currentHealth = _stats.BaseHealth;
+        _currentDamage = _stats.BaseDamage;
+        _currentSpeed = _stats.BaseSpeed;
         transform.position = new Vector3(transform.position.x, 2.0f, transform.position.z);
     }
 

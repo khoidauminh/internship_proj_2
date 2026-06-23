@@ -3,15 +3,12 @@ using System.Collections.Generic;
 
 public class EnemyManager : MonoBehaviour
 {
-    private List<BaseUnitConfig> _types = new();
     private readonly List<int> _spawnCount = new List<int> { 0, 0, 0 };
     private DataManager.Config _config;
 
-    private int _level = 0;
-
     private float _spawnTimer;
 
-    private readonly List<BaseUnitController> _enemies = new();
+    private List<BaseUnitController> _enemies;
     private int _enemiesKiled;
 
     private bool _cleared = false;
@@ -21,24 +18,15 @@ public class EnemyManager : MonoBehaviour
     private const float SPAWN_DIST = 3f;
     private const float SPAWN_RANGE = 4f;
 
+    void Awake()
+    {
+        _enemies = new();
+    }
+
     void Start()
     {
-        BaseUnitConfig cylinder = ScriptableObject.CreateInstance<BaseUnitConfig>();
-        cylinder.Initialize(5, 5, 2f, "Cylinder");
-
-        BaseUnitConfig capsule = ScriptableObject.CreateInstance<BaseUnitConfig>();
-        capsule.Initialize(1, 1, 2f, "Capsule");
-
-        BaseUnitConfig cube = ScriptableObject.CreateInstance<BaseUnitConfig>();
-        cube.Initialize(1, 1, 5f, "Cube");
-
-        _level = GameManager.GetInstance().CurrentSaveData.level;
         _enemiesKiled = GameManager.GetInstance().CurrentSaveData.enemiesKilled;
         _config = GameManager.GetInstance().GetConfig();
-
-        _types.Add(cylinder);
-        _types.Add(capsule);
-        _types.Add(cube);
     }
 
     public int EnemiesKilled()
@@ -46,28 +34,48 @@ public class EnemyManager : MonoBehaviour
         return _enemiesKiled;
     }
 
+    private Vector3 computeSpawnPoint()
+    {
+        SpawnLimiter sl = FindAnyObjectByType<SpawnLimiter>();
+
+        if (sl == null)
+        {
+            float spawnX = (Random.Range(0f, SPAWN_RANGE) + SPAWN_DIST) * (UnityEngine.Random.value < 0.5f ? 1f : -1f);
+            float spawnY = (Random.Range(0f, SPAWN_RANGE) + SPAWN_DIST) * (UnityEngine.Random.value < 0.5f ? 1f : -1f);
+
+            spawnX = Mathf.Clamp(spawnX, -10f, 10f);
+            spawnY = Mathf.Clamp(spawnY, -10f, 10f);
+
+            return new Vector3(spawnX, 0, spawnY);
+        }
+
+        float Xlo = sl.gameObject.transform.position.x - sl.gameObject.transform.localScale.x / 2f;
+        float Xhi = sl.gameObject.transform.position.x + sl.gameObject.transform.localScale.x / 2f;
+
+        float Zlo = sl.gameObject.transform.position.z - sl.gameObject.transform.localScale.z / 2f;
+        float Zhi = sl.gameObject.transform.position.z + sl.gameObject.transform.localScale.z / 2f;
+
+        return new Vector3(Random.Range(Xlo, Xhi), 0, Random.Range(Zlo, Zhi));
+    }
+
     public void SpawnEnemy()
     {
-        if (_level >= _types.Count)
+        int _level = GameManager.GetInstance().CurrentSaveData.level;
+
+        if (_level >= _config.Levels.Count)
         {
             return;
         }
 
-        BaseUnitConfig config = _types[_level];
+        BaseUnitConfig.Stats stats = _config.Levels[_level].Stats;
 
         if (_spawnCount[_level] >= _config.Levels[_level].NumEnemies)
         {
             return;
         }
 
-        float spawnX = (Random.Range(0f, SPAWN_RANGE) + SPAWN_DIST) * (UnityEngine.Random.value < 0.5f ? 1f : -1f);
-        float spawnY = (Random.Range(0f, SPAWN_RANGE) + SPAWN_DIST) * (UnityEngine.Random.value < 0.5f ? 1f : -1f);
-
-        spawnX = Mathf.Clamp(spawnX, -10f, 10f);
-        spawnY = Mathf.Clamp(spawnY, -10f, 10f);
-
-        Vector3 spawnPoint = new Vector3(spawnX, 0, spawnY);
-        GameObject enemy = UnitPool.GetInstance().GetUnit(config);
+        Vector3 spawnPoint = computeSpawnPoint();
+        GameObject enemy = UnitPool.GetInstance().GetUnit(stats);
 
         if (enemy == null)
         {
@@ -77,7 +85,7 @@ public class EnemyManager : MonoBehaviour
 
         BaseUnitController controller = enemy.GetComponent<BaseUnitController>();
 
-        controller.Initialize(config);
+        controller.Initialize(stats);
         controller.transform.Translate(spawnPoint);
 
         if (controller == null)
@@ -92,11 +100,29 @@ public class EnemyManager : MonoBehaviour
         GameManager.GetInstance().BroadcastEnemySpawn(controller.transform.position);
     }
 
+    public void Adopt(BaseUnitController e)
+    {
+        if (e == null)
+        {
+            return;
+        }
+
+        if (_enemies.Contains(e))
+        {
+            Debug.Log("Already in list");
+            return;
+        }
+
+        Debug.Log("Added to list");
+
+        _enemies.Add(e);
+    }
+
     void AdvanceCurrentEnemies()
     {
-        for (int i = 0; i < _enemies.Count; i++)
+        foreach (BaseUnitController enemy in _enemies)
         {
-            _enemies[i].CustomUpdate();
+            enemy.CustomUpdate();
         }
     }
 
@@ -113,6 +139,8 @@ public class EnemyManager : MonoBehaviour
     void CheckLevel()
     {
         Debug.Log("Checking...");
+
+        int _level = GameManager.GetInstance().CurrentSaveData.level;
 
         if (_level < 3 && _spawnCount[_level] >= _config.Levels[_level].NumEnemies && _enemies.Count == 0)
         {

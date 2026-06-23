@@ -23,7 +23,11 @@ public class GameManager : MonoBehaviour
     public event Action<Vector3> OnPlayerAttack;
 
     private DataManager _dataManager;
+
+    [SerializeField]
     private DataManager.SaveData _currentSave;
+
+    [SerializeField]
     private DataManager.Config _currentConfig;
 
     private int _runCount;
@@ -105,7 +109,7 @@ public class GameManager : MonoBehaviour
         _isPaused = false;
         _dataManager = new DataManager();
         _runCount = _dataManager.GetRunCount();
-        _currentConfig = _dataManager.TryLoad<DataManager.Config>();
+        _currentConfig = _dataManager.TryLoadConfig();
 
         Input.Player.Pause.performed += HandlePause;
 
@@ -143,7 +147,7 @@ public class GameManager : MonoBehaviour
 
     public void LoadData()
     {
-        _currentSave = _dataManager.TryLoad<DataManager.SaveData>();
+        _currentSave = _dataManager.TryLoadSaveData();
         Debug.Log($"Data: {_currentSave}");
         EnemyKilled(_currentSave.enemiesKilled);
     }
@@ -159,9 +163,9 @@ public class GameManager : MonoBehaviour
 
     public void ReturnToMenu()
     {
-        _dataManager.TrySave<DataManager.SaveData>(_currentSave);
+        _dataManager.TrySaveSaveData(_currentSave);
+        _dataManager.TrySaveConfig(_currentConfig);
         _dataManager.SaveRunCount(_runCount);
-        _dataManager.TrySave<DataManager.Config>(_currentConfig);
         SceneManager.LoadScene("title");
         ChangeScreen("title");
         Unpause();

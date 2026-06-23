@@ -3,23 +3,35 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "BaseUnitConfig", menuName = "Scriptable Objects/BaseUnitConfig")]
 public class BaseUnitConfig : ScriptableObject
 {
-    [SerializeField] private int _baseHealth;
-    public int BaseHealth => _baseHealth;
+    [System.Serializable]
+    public class Stats
+    {
+        public int BaseHealth;
+        public int BaseDamage;
+        public float BaseSpeed;
+        public string Name;
+    }
 
-    [SerializeField] private int _baseDamage;
-    public int BaseDamage => _baseDamage;
+    [SerializeField]
+    private Stats stats;
 
-    [SerializeField] private float _baseSpeed;
-    public float BaseSpeed => _baseSpeed;
+    public int BaseHealth => stats.BaseHealth;
+    public int BaseDamage => stats.BaseDamage;
+    public float BaseSpeed => stats.BaseSpeed;
+    public string Name => stats.Name;
 
-    [SerializeField] private string _name;
-    public string Name => _name;
+    public Stats Get()
+    {
+        return stats;
+    }
 
     public void Initialize(int baseHealth, int baseDamage, float baseSpeed, string name)
     {
-        _baseHealth = baseHealth;
-        _baseDamage = baseDamage;
-        _baseSpeed = baseSpeed;
-        _name = name;
+        stats ??= new Stats();
+
+        stats.BaseHealth = baseHealth;
+        stats.BaseDamage = baseDamage;
+        stats.BaseSpeed = baseSpeed;
+        stats.Name = name;
     }
 }
