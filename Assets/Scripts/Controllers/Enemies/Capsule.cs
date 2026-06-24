@@ -1,28 +1,38 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Capsule : BaseEnemy
 {
+    public NavMeshAgent agent;
+
+    private void Start()
+    {
+        agent.speed = _currentSpeed;
+    }
+
     public override void CustomUpdate()
     {
-        transform.Translate(Random.Range(-0.05f, 0.05f), 0, Random.Range(-0.05f, 0.05f));
+        agent.SetDestination(GameObject.Find("Player").transform.position);
 
-        GameObject player = GameObject.Find("Player");
+        //transform.Translate(Random.Range(-0.05f, 0.05f), 0, Random.Range(-0.05f, 0.05f));
 
-        Vector3 offset = transform.position - player.transform.position;
-        offset.y = 0;
+        //GameObject player = GameObject.Find("Player");
 
-        if (offset.magnitude < 4f)
-        {
-            Move(offset.normalized);
-        }
+        //Vector3 offset = transform.position - player.transform.position;
+        //offset.y = 0;
 
-        if (transform.position.magnitude >= 10f)
-        {
-            Vector3 dir = -transform.position.normalized;
+        //if (offset.magnitude < 4f)
+        //{
+        //    Move(offset.normalized);
+        //}
 
-            dir.y = 0;
+        //if (transform.position.magnitude >= 10f)
+        //{
+        //    Vector3 dir = -transform.position.normalized;
 
-            Move(dir);
-        }
+        //    dir.y = 0;
+
+        //    Move(dir);
+        //}
     }
 }

@@ -13,6 +13,7 @@ public class AudioManager : MonoBehaviour
     private AudioClip _explode = null;
     private AudioClip _levelUp = null;
     private AudioClip _win = null;
+    private AudioClip _hurt = null;
 
     private readonly Queue<AudioSource> _pool = new();
 
@@ -40,6 +41,7 @@ public class AudioManager : MonoBehaviour
         _spawn ??= Resources.Load<AudioClip>("Sounds/Spawn");
         _levelUp ??= Resources.Load<AudioClip>("Sounds/Levelup");
         _win ??= Resources.Load<AudioClip>("Sounds/Win");
+        _hurt ??= Resources.Load<AudioClip>("Sounds/Hurt");
     }
 
     void SpawnAudioSource(AudioClip clip, Vector3 pos)
@@ -106,6 +108,11 @@ public class AudioManager : MonoBehaviour
         {
             i.Stop();
         }
+    }
+
+    public void Hurt()
+    {
+        SpawnAudioSource(_hurt);
     }
 
     public void Win()

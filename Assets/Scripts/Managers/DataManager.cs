@@ -29,10 +29,12 @@ public class DataManager
             }
         }
 
+        public int PlayerMaxHealth;
         public List<Level> Levels;
 
-        public Config(List<Level> levels)
+        public Config(int playerMaxHealth, List<Level> levels)
         {
+            PlayerMaxHealth = playerMaxHealth;
             Levels = levels;
         }
 
@@ -57,7 +59,7 @@ public class DataManager
 
     void Awake()
     {
-        defaultConfig = new Config(new List<Level> {
+        defaultConfig = new Config(3, new List<Level> {
             new Level(10, Resources.Load<BaseUnitConfig>("Configs/Cylinder").Get()),
             new Level(10, Resources.Load<BaseUnitConfig>("Configs/Capsule").Get()),
             new Level(15, Resources.Load<BaseUnitConfig>("Configs/Cube").Get())

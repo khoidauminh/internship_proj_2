@@ -319,6 +319,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71a9f3721e6d78b6c93f404ddbf93fac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  _currentSave:
+    enemiesKilled: 0
+    level: 0
+  _currentConfig:
+    PlayerMaxHealth: 3
+    Levels:
+    - NumEnemies: 5
+      Stats:
+        BaseHealth: 5
+        BaseDamage: 5
+        BaseSpeed: 2
+        Name: Cylinder
+    - NumEnemies: 5
+      Stats:
+        BaseHealth: 1
+        BaseDamage: 1
+        BaseSpeed: 2
+        Name: Capsule
 --- !u!4 &492651850
 Transform:
   m_ObjectHideFlags: 0

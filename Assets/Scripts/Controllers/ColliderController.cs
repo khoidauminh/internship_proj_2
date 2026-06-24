@@ -6,9 +6,13 @@ public class ColliderController : MonoBehaviour
     private int _enemyLayer;
 
     private float _attack;
+    private float _hurt;
+    public float HurtTimer => _hurt;
 
     private const float _attackActivationThres = 0.4f;
     private const float _attackCooldown = 0.5f;
+
+    private const float _hurtCooldown = 1.5f;
 
     private CameraController _camera;
 
@@ -31,10 +35,25 @@ public class ColliderController : MonoBehaviour
         GameManager.GetInstance().Input.Player.Attack.performed -= HandleAttack;
     }
 
-    void HandleAttack(InputAction.CallbackContext ctx)
+    public void Hurt()
     {
-        _attack = _attackCooldown;
-        GameManager.GetInstance().BroadcastPlayerAttack(transform.position);
+        GameManager.GetInstance().BroadCastPlayerHurt();
+        _hurt = _hurtCooldown;
+    }
+
+    public void HandleAttack()
+    {
+        GameManager game = GameManager.GetInstance();
+
+        if (!game.IsPaused())
+        {
+            _attack = _attackCooldown;
+            GameManager.GetInstance().BroadcastPlayerAttack(transform.position);
+        }
+    }
+    public void HandleAttack(InputAction.CallbackContext ctx)
+    {
+        HandleAttack();
     }
 
     public bool IsAttacking()
@@ -58,6 +77,11 @@ public class ColliderController : MonoBehaviour
     {
         transform.position = player.transform.position;
         transform.rotation = player.transform.rotation;
+
+        if (_hurt >= 0)
+        {
+            _hurt -= Time.deltaTime;
+        }
 
         if (_attack >= 0)
             _attack -= Time.deltaTime;

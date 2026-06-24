@@ -9,6 +9,8 @@ public class PlayerController : MonoBehaviour
     private ColliderController _collider;
     private Rigidbody _rb;
 
+    [SerializeField] private Renderer _renderer;
+
     void Awake()
     {
         _animator = transform.GetChild(0).GetComponent<Animator>();
@@ -38,14 +40,20 @@ public class PlayerController : MonoBehaviour
         Vector2 inputDirection = GameManager.GetInstance().MoveDirection();
         Vector3 moveDirection = new Vector3(inputDirection.x, 0, inputDirection.y);
 
+        transform.rotation = GameObject.Find("CameraHolder").transform.rotation;
+
         if (moveDirection.magnitude > 0.1f)
         {
-            transform.rotation = Quaternion.LookRotation(moveDirection);
-            transform.Translate(moveDirection * Time.deltaTime * 5f, Space.World);
+            transform.Translate(moveDirection * Time.deltaTime * 5f);
+        }
+        
+        if (_collider.HurtTimer > 0f)
+        {
+            _renderer.enabled = (_collider.HurtTimer % 0.1) > 0.05;
         }
         else
         {
-            transform.rotation = Quaternion.Euler(0, transform.rotation.y, 0);
+            _renderer.enabled = true;
         }
 
         _collider.CustomUpdate();

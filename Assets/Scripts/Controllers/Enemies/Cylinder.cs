@@ -1,32 +1,29 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Cylinder : BaseEnemy
 {
-    private Vector3 _targetPosition;
-    private Vector3 _currentPosition;
+    private float retargetTimer;
+    public NavMeshAgent agent;
 
-    private float _reTargetTimer;
+    void Start()
+    {
+        agent.speed = _currentSpeed;
+    }
 
     public override void CustomUpdate()
     {
-        transform.rotation = Quaternion.identity;
+        retargetTimer -= Time.deltaTime;
 
-        _reTargetTimer -= Time.deltaTime;
-
-        if (_reTargetTimer <= 0)
+        if (retargetTimer <= 0)
         {
-            _reTargetTimer = Random.Range(2f, 5f);
-            _currentPosition = transform.position;
-            _targetPosition += new Vector3(Random.Range(-2f, 2f), 0, Random.Range(-2f, 2f));
-            _targetPosition = Vector3.ClampMagnitude(_targetPosition, 12f);
-        }
+            retargetTimer = Random.Range(2f, 5f);
+            // _targetPosition += new Vector3(Random.Range(-2f, 2f), 0, Random.Range(-2f, 2f));
+            Transform region = GameObject.Find("NavRegion").transform;
+            float x = Random.Range(region.position.x - region.localScale.x / 2f, region.position.x + region.localScale.x / 2f);
+            float z = Random.Range(region.position.z - region.localScale.z / 2f, region.position.z + region.localScale.z / 2f);
 
-        Vector3 diff = _targetPosition - transform.position;
-        if (diff.magnitude > 0.1f)
-        {
-            Vector3 direction = diff.normalized;
-            direction.y = 0;
-            Move(direction);
+            agent.SetDestination(new Vector3(z, 0, z));
         }
 
         base.CustomUpdate();

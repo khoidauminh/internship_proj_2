@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using TMPro;
 
 public class UIRoot : MonoBehaviour
 {
@@ -63,6 +64,7 @@ public class UIRoot : MonoBehaviour
         if (next == "title")
         {
             ToggleUI("Title Screen", true);
+            ToggleUI("Pause Screen", false);
         }
 
         if (prev == "game")

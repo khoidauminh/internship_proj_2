@@ -13,7 +13,16 @@ public class UnitPool : MonoBehaviour
 
     void Awake()
     {
-        Init();
+        
+    }
+
+    private static UnitPool _instance;
+
+    public static UnitPool GetInstance()
+    {
+        _instance ??= FindAnyObjectByType<UnitPool>();
+        _instance ??= new GameObject(nameof(UnitPool)).AddComponent<UnitPool>();
+        return _instance;
     }
 
     void Start()
@@ -27,36 +36,50 @@ public class UnitPool : MonoBehaviour
         {
             _instance = this;
         }
+
+        Init();
     }
 
     class PoolElement
     {
         [SerializeField] private static readonly int initialPoolSize = 10;
 
-        public GameObject prefab;
-
         public Queue<GameObject> objects = new Queue<GameObject>();
 
-        public PoolElement(GameObject prefab)
-        {
-            if (prefab == null)
-            {
-                Debug.LogError("Prefab is null!!");
-            }
+        string prefabPath;
 
-            this.prefab = prefab;
+        public PoolElement(string prefabPath)
+        {
+            this.prefabPath = prefabPath;
 
             for (int i = 0; i < initialPoolSize; i++)
             {
-                GameObject newObj = Instantiate(prefab);
+                GameObject newObj = Instantiate(Resources.Load<GameObject>(prefabPath));
                 newObj.SetActive(false);
                 objects.Enqueue(newObj);
             }
         }
+        private GameObject getOrNew()
+        {
+            //objects = new Queue<GameObject>(objects.Where(o => o == null));
+
+            while (objects.Count > 0 && objects.Peek() == null) objects.Dequeue();
+
+            if (objects.Count > 0)
+            {
+                if (!objects.Peek().activeSelf)
+                {
+                    return objects.Dequeue();
+                }
+            }
+
+            return Instantiate(Resources.Load<GameObject>(prefabPath));
+        }
 
         public GameObject Get()
         {
-            GameObject obj = (objects.Count > 0 && !objects.Peek().activeSelf) ? objects.Dequeue() : Instantiate(prefab);
+            objects = new Queue<GameObject>(objects.Where(o => o == null));
+            GameObject obj = getOrNew();
             obj.SetActive(true);
             return obj;
         }
@@ -74,7 +97,7 @@ public class UnitPool : MonoBehaviour
 
         if (!pools.ContainsKey(config))
         {
-            pools[config] = new PoolElement(Resources.Load<GameObject>($"Prefabs/{config.Name}"));
+            pools[config] = new PoolElement($"Prefabs/{config.Name}");
         }
     }
 
@@ -90,12 +113,4 @@ public class UnitPool : MonoBehaviour
         pools[controller.Stats].Push(controller.gameObject);
     }
 
-    private static UnitPool _instance;
-
-    public static UnitPool GetInstance()
-    {
-        _instance ??= FindAnyObjectByType<UnitPool>();
-        _instance ??= new GameObject(nameof(UnitPool)).AddComponent<UnitPool>();
-        return _instance;
-    }
 }

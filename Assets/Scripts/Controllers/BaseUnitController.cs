@@ -9,6 +9,11 @@ public class BaseUnitController : MonoBehaviour
     protected int _currentDamage;
     protected float _currentSpeed;
 
+    void Start()
+    {
+
+    }
+
     public void Initialize(BaseUnitConfig.Stats config)
     {
         _stats = config;

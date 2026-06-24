@@ -6,6 +6,8 @@ public class EnemyManager : MonoBehaviour
     private readonly List<int> _spawnCount = new List<int> { 0, 0, 0 };
     private DataManager.Config _config;
 
+    private GameObject[] _spawnAreas;
+
     private float _spawnTimer;
 
     private List<BaseUnitController> _enemies;
@@ -27,6 +29,9 @@ public class EnemyManager : MonoBehaviour
     {
         _enemiesKiled = GameManager.GetInstance().CurrentSaveData.enemiesKilled;
         _config = GameManager.GetInstance().GetConfig();
+        _spawnAreas = GameObject.FindGameObjectsWithTag("EnemySpawn");
+
+        Debug.Log($"Found {_spawnAreas.Length} spawn areas");
     }
 
     public int EnemiesKilled()
@@ -36,10 +41,10 @@ public class EnemyManager : MonoBehaviour
 
     private Vector3 computeSpawnPoint()
     {
-        SpawnLimiter sl = FindAnyObjectByType<SpawnLimiter>();
-
-        if (sl == null)
+        if (_spawnAreas == null)
         {
+            Debug.LogWarning("Can't find Spawn Limiter");
+
             float spawnX = (Random.Range(0f, SPAWN_RANGE) + SPAWN_DIST) * (UnityEngine.Random.value < 0.5f ? 1f : -1f);
             float spawnY = (Random.Range(0f, SPAWN_RANGE) + SPAWN_DIST) * (UnityEngine.Random.value < 0.5f ? 1f : -1f);
 
@@ -49,11 +54,13 @@ public class EnemyManager : MonoBehaviour
             return new Vector3(spawnX, 0, spawnY);
         }
 
-        float Xlo = sl.gameObject.transform.position.x - sl.gameObject.transform.localScale.x / 2f;
-        float Xhi = sl.gameObject.transform.position.x + sl.gameObject.transform.localScale.x / 2f;
+        var spawnArea = _spawnAreas[Random.Range(0, _spawnAreas.Length)];
 
-        float Zlo = sl.gameObject.transform.position.z - sl.gameObject.transform.localScale.z / 2f;
-        float Zhi = sl.gameObject.transform.position.z + sl.gameObject.transform.localScale.z / 2f;
+        float Xlo = spawnArea.transform.position.x - spawnArea.transform.localScale.x / 2f;
+        float Xhi = spawnArea.transform.position.x + spawnArea.transform.localScale.x / 2f;
+
+        float Zlo = spawnArea.transform.position.z - spawnArea.transform.localScale.z / 2f;
+        float Zhi = spawnArea.transform.position.z + spawnArea.transform.localScale.z / 2f;
 
         return new Vector3(Random.Range(Xlo, Xhi), 0, Random.Range(Zlo, Zhi));
     }
@@ -152,7 +159,7 @@ public class EnemyManager : MonoBehaviour
 
             _level += 1;
 
-            _cleared |= (_level == 3);
+            _cleared |= (_level == _config.Levels.Count);
 
             AudioManager.GetInstance().LevelUp(player.transform.position);
             GameManager.GetInstance().LevelUp(_level);

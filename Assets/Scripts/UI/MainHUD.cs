@@ -6,10 +6,13 @@ public class MainHUD : MonoBehaviour
 {
     [SerializeField] private TMP_Text _enemiesKilled;
     [SerializeField] private GameObject _enemiesKilledButton;
+    [SerializeField] private Slider _playerHealth;
     [SerializeField] private Button _backButton;
     [SerializeField] private TMP_Text _runText;
     [SerializeField] private Animator _animator;
-    [SerializeField] private FixedJoystick _joystick;
+    [SerializeField] private FixedJoystick _moveJoystick;
+    [SerializeField] private FixedJoystick _turnJoystick;
+    [SerializeField] private Button _attackButton;
 
     void Start()
     {
@@ -19,6 +22,15 @@ public class MainHUD : MonoBehaviour
         SetNewKill(game.CurrentSaveData.enemiesKilled);
 
         _backButton.onClick.AddListener(GameManager.GetInstance().HandlePause);
+        _attackButton.onClick.AddListener(() =>
+        {
+            ColliderController collidercontroller = FindAnyObjectByType<ColliderController>();
+            if (collidercontroller != null)
+            {
+                collidercontroller.HandleAttack();
+            }
+        });
+
         game.OnEnemyKillCountChange += SetNewKill;
         game.OnNewRun += SetRunCount;
     }
@@ -36,11 +48,19 @@ public class MainHUD : MonoBehaviour
 
     void Update()
     {
-        Vector2 vec = new Vector2(_joystick.Horizontal, _joystick.Vertical);
+        Vector2 moveVec = new Vector2(_moveJoystick.Horizontal, _moveJoystick.Vertical);
+        float turnDelta = _turnJoystick.Horizontal * Time.deltaTime * 100f;
 
-        if (vec.magnitude > 0.1 || Application.platform == RuntimePlatform.Android)
+        GameManager game = GameManager.GetInstance();
+
+        _playerHealth.value = (float) GameManager.GetInstance().PlayerHealth / (float)GameManager.GetInstance().GetConfig().PlayerMaxHealth;
+        Debug.Log($"{_playerHealth.value}");
+
+        if (moveVec.magnitude > 0.1 || Application.platform == RuntimePlatform.Android)
         {
-            GameManager.GetInstance().SetMoveDirection(vec.normalized);
+            game.SetMoveDirection(moveVec.normalized);
         }
+
+        game.SetTurnDelta(turnDelta);
     }
 }

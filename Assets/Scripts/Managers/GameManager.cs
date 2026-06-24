@@ -10,12 +10,15 @@ public class GameManager : MonoBehaviour
 
     public PlayerInput Input { get; private set; }
     private Vector2 _moveDirection;
+    public float TurnDelta { get; private set; }
+    public int PlayerHealth { get; private set; }
 
     public event Action<string, string> OnSceneChange;
     public event Action<bool> OnPause;
     public event Action<int> OnEnemyKillCountChange;
     public event Action<Vector3> OnEnemySpawn;
     public event Action<int> OnLevelUp;
+    public event Action OnPlayerHurt;
 
     public event Action<int> OnNewRun;
 
@@ -52,11 +55,30 @@ public class GameManager : MonoBehaviour
         OnEnemySpawn?.Invoke(pos);
         AudioManager.GetInstance().Spawn(pos);
     }
+    
+    public void BroadCastPlayerHurt()
+    {
+        PlayerHealth -= 1;
+
+        if (PlayerHealth < 1)
+        {
+            SwitchToGameScene();
+            return;
+        }
+
+        AudioManager.GetInstance().Hurt();
+        OnPlayerHurt?.Invoke();
+    }
 
     public void SetMoveDirection(Vector2 moveDir)
     {
         _moveDirection = moveDir;
-        Debug.Log($"{moveDir}, {moveDir}");
+        //Debug.Log($"{moveDir}, {moveDir}");
+    }
+
+    public void SetTurnDelta(float turn)
+    {
+        TurnDelta = turn;
     }
 
     public Vector2 MoveDirection()
@@ -109,7 +131,8 @@ public class GameManager : MonoBehaviour
         _isPaused = false;
         _dataManager = new DataManager();
         _runCount = _dataManager.GetRunCount();
-        _currentConfig = _dataManager.TryLoadConfig();
+        PlayerHealth = _currentConfig.PlayerMaxHealth;
+        // _currentConfig = _dataManager.TryLoadConfig();
 
         Input.Player.Pause.performed += HandlePause;
 
@@ -134,9 +157,10 @@ public class GameManager : MonoBehaviour
     }
 
     public void ChangeScreen(string newSceneName)
-    {
+    {   
         Debug.Log($"Changing scene from {_currentScene} to {newSceneName}");
         OnSceneChange?.Invoke(_currentScene, newSceneName);
+        Resources.UnloadUnusedAssets();
         _currentScene = newSceneName;
     }
 
@@ -152,6 +176,12 @@ public class GameManager : MonoBehaviour
         EnemyKilled(_currentSave.enemiesKilled);
     }
 
+    void lockCursor(bool b)
+    {
+        Cursor.lockState = b ? CursorLockMode.Locked : CursorLockMode.None;
+        Cursor.visible = !b;
+    }
+
     public void SwitchToGameScene()
     {
         SceneManager.LoadScene("game");
@@ -159,6 +189,11 @@ public class GameManager : MonoBehaviour
         EnemyKilled(_currentSave.enemiesKilled);
         OnNewRun?.Invoke(_runCount);
         _runCount += 1;
+
+        Unpause();
+
+        PlayerHealth = 3;
+        //lockCursor(true);
     }
 
     public void ReturnToMenu()
@@ -168,7 +203,8 @@ public class GameManager : MonoBehaviour
         _dataManager.SaveRunCount(_runCount);
         SceneManager.LoadScene("title");
         ChangeScreen("title");
-        Unpause();
+
+        //lockCursor(false);
     }
 
     public bool IsPlaying()
@@ -181,6 +217,8 @@ public class GameManager : MonoBehaviour
         OnPause?.Invoke(false);
         Time.timeScale = 1;
         _isPaused = false;
+
+        //lockCursor(true);
     }
 
     public void Pause()
@@ -188,6 +226,8 @@ public class GameManager : MonoBehaviour
         OnPause?.Invoke(true);
         Time.timeScale = 0;
         _isPaused = true;
+
+        //lockCursor(false);
     }
 
     public bool IsPaused()
@@ -207,9 +247,16 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (Application.platform != RuntimePlatform.Android)
+        if (!IsPaused())
         {
-            _moveDirection = Input.Player.Move.ReadValue<Vector2>();
+            if (Application.platform != RuntimePlatform.Android)
+            {
+                _moveDirection = Input.Player.Move.ReadValue<Vector2>();
+            }
+        } 
+        else
+        {
+            TurnDelta = 0f;
         }
     }
 }
