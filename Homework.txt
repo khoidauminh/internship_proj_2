@@ -1,0 +1,4 @@
+Code ra shader metallic giống Unity:
+
+- Diffuse
+- Specular
